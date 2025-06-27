@@ -1,0 +1,9 @@
+build:
+  go build -o ./tmp/server ./server/server.go
+  go build -o ./tmp/client ./client/client.go
+
+run-server:
+  ./tmp/server
+
+run-client:
+  ./tmp/client
