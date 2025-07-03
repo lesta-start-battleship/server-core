@@ -3,7 +3,6 @@ package matchmakers
 import (
 	"lesta-battleship/server-core/internal/infra"
 	"lesta-battleship/server-core/internal/multiplayer/actors"
-	"lesta-battleship/server-core/internal/multiplayer/actors/hubs"
 	"lesta-battleship/server-core/internal/multiplayer/actors/players"
 	"lesta-battleship/server-core/internal/multiplayer/actors/rooms"
 	"lesta-battleship/server-core/pkg/packets"
@@ -20,16 +19,23 @@ const (
 )
 
 type Matchmaker struct {
+	id    string
+	queue map[string]*players.Player
+
 	playerRegistry players.PlayerRegistry
 	roomRegistry   rooms.RoomRegistry
 
-	hub actors.Actor
+	hub      actors.Actor
+	strategy Strategy
 
 	packetChan chan packets.Packet
 }
 
-func NewMatchmaker(playerRegistry players.PlayerRegistry, roomRegistry rooms.RoomRegistry) *Matchmaker {
+func NewMatchmaker(id string, playerRegistry players.PlayerRegistry, roomRegistry rooms.RoomRegistry) *Matchmaker {
 	return &Matchmaker{
+		id:    id,
+		queue: make(map[string]*players.Player),
+
 		playerRegistry: playerRegistry,
 		roomRegistry:   roomRegistry,
 
@@ -39,83 +45,97 @@ func NewMatchmaker(playerRegistry players.PlayerRegistry, roomRegistry rooms.Roo
 	}
 }
 
-func (mm *Matchmaker) SetParent(hub *hubs.Hub) {
+func (mm *Matchmaker) Id() string {
+	return mm.id
+}
+
+func (mm *Matchmaker) ConnectTo(hub actors.Actor) {
 	mm.hub = hub
+}
+
+func (mm *Matchmaker) ChangeStrategy(newStrategy Strategy) {
+	if mm.strategy != nil {
+		mm.strategy.OnExit()
+	}
+
+	mm.strategy = newStrategy
+
+	log.Printf("Matchmaker %q: Changed strategy to %q", mm.id, newStrategy)
 }
 
 func (mm *Matchmaker) GetPacket(senderId string, packet packets.Packet) {
 	mm.packetChan <- packet
 
-	log.Printf("Matchmaker: Received packet from %q", packet.SenderId)
+	log.Printf("Matchmaker %q: Received packet from %q", mm.id, packet.SenderId)
 }
 
 func (mm *Matchmaker) Start() {
-	defer mm.Stop()
+	defer func() {
+		if _, ok := <-mm.packetChan; !ok {
+			close(mm.packetChan)
+		}
+		mm.Stop()
+	}()
+
+	log.Printf("Matchmaker %q: Started", mm.id)
 
 	for packet := range mm.packetChan {
 		mm.handlePacket(packet.SenderId, packet)
 	}
 }
 
-// TODO: Probably unsafe
 func (mm *Matchmaker) Stop() {
-	if _, ok := <-mm.packetChan; !ok {
-		close(mm.packetChan)
+	if mm.strategy != nil {
+		mm.strategy.OnExit()
 	}
+	mm.strategy = nil
 
-	log.Println("Matchmaker: Closed")
+	mm.hub = nil
+	mm.playerRegistry = nil
+	mm.roomRegistry = nil
+
+	log.Println("Matchmaker: Stopped")
 }
 
 func (mm *Matchmaker) handlePacket(senderId string, packet packets.Packet) {
-	switch packet := packet.Body.(type) {
-	case packets.JoinSearch:
-		mm.handleJoinRoom(senderId, packet)
-	case packets.Disconnect:
-		mm.handleDisconnect(senderId, packet)
-	}
+	mm.strategy.HandlePacket(senderId, packet)
 }
 
-func (mm *Matchmaker) handleJoinRoom(senderId string, packet packets.JoinSearch) {
-	// TODO: Add PROPER matchmaking
-	rooms := mm.roomRegistry.Rooms()
-	for id, room := range rooms {
-		if !room.Full() {
-			room.GetPacket(senderId, packets.Packet{SenderId: senderId, Body: packets.ConnectPlayer{Id: senderId}})
-
-			log.Printf("Matchmaker: Connected to Random room %q", id)
-
-			return
-		}
-	}
-
-	room := mm.createRandomRoom(infra.GenerateId())
-	mm.roomRegistry.Track(room.Id(), room)
-
-	room.GetPacket(senderId, packets.Packet{SenderId: senderId, Body: packets.ConnectPlayer{Id: senderId}})
-}
-
-func (mm *Matchmaker) handleDisconnect(senderId string, packet packets.Disconnect) {
-	mm.hub.GetPacket(senderId, packets.Packet{SenderId: senderId, Body: packet})
-}
-
-func (mm *Matchmaker) createRandomRoom(id string) *rooms.Room {
-	room := createRoom(id, mm.playerRegistry, mm)
+func (mm *Matchmaker) CreateRoom() actors.Actor {
+	id := infra.GenerateId()
+	room := createRoom(id, mm)
 	mm.roomRegistry.Track(id, room)
 
-	log.Printf("Matchmaker: Created random room %q", room.Id())
+	log.Printf("Matchmaker: Created room %q", room.Id())
 
 	return room
 }
 
-func (mm *Matchmaker) deleteRoom(room *rooms.Room) {
+func (mm *Matchmaker) DeleteRoom(room *rooms.Room) {
 	mm.roomRegistry.Delete(room.Id())
 	room.Stop()
 
 	log.Printf("Matchmaker: Deregistered room %q", room.Id())
 }
 
-func createRoom(id string, playerRegistry players.PlayerRegistry, mm *Matchmaker) *rooms.Room {
-	room := rooms.NewRoom(id, playerRegistry, mm)
+func (mm *Matchmaker) AddToQueue(playerId string) {
+	player := mm.playerRegistry.Find(playerId)
+	mm.queue[playerId] = player
+	players.SetInSearch(player, mm)
+
+	log.Printf("Matchmaker %q: Added to queue player %q", mm.id, playerId)
+	log.Printf("Matchmaker %q: Queue %v", mm.id, mm.queue)
+}
+
+func (mm *Matchmaker) RemoveFromQueue(playerId string) {
+	delete(mm.queue, playerId)
+
+	log.Printf("Matchmaker %q: Removed from queue player %q", mm.id, playerId)
+	log.Printf("Matchmaker %q: Queue %v", mm.id, mm.queue)
+}
+
+func createRoom(id string, mm *Matchmaker) *rooms.Room {
+	room := rooms.NewRoom(id, mm.playerRegistry, mm)
 	go room.Start()
 
 	return room
