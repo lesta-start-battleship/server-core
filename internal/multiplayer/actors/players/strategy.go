@@ -3,7 +3,7 @@ package players
 import (
 	"fmt"
 	"lesta-battleship/server-core/internal/multiplayer/actors"
-	"lesta-battleship/server-core/internal/multiplayer/actors/players/states"
+	"lesta-battleship/server-core/internal/multiplayer/actors/players/strategies"
 	"lesta-battleship/server-core/pkg/packets"
 )
 
@@ -15,9 +15,9 @@ type Strategy interface {
 }
 
 func SetInRoom(player *Player, room actors.Actor) {
-	player.ChangeStrategy(&states.InRoom{Room: room})
+	player.ChangeStrategy(&strategies.InRoom{Room: room})
 }
 
 func SetInSearch(player *Player, matchmaker actors.Actor) {
-	player.ChangeStrategy(&states.InSearch{Matchmaker: matchmaker})
+	player.ChangeStrategy(&strategies.InSearch{Matchmaker: matchmaker})
 }
