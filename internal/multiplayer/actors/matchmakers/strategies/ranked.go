@@ -16,24 +16,24 @@ type Ranked struct {
 
 func (s *Ranked) HandlePacket(senderId string, packet packets.Packet) {
 	switch packet := packet.Body.(type) {
-	case packets.JoinSearch:
+	case *packets.JoinSearch:
 		s.handleJoinSearch(senderId, packet)
-	case packets.Disconnect:
+	case *packets.Disconnect:
 		s.handleDisconnect(senderId, packet)
 	default:
 		log.Printf("Matchmaker %q: Got incorrect packet %t from %q", s.Matchmaker.Id(), packet, senderId)
 	}
 }
 
-func (s *Ranked) handleJoinSearch(senderId string, packet packets.JoinSearch) {
+func (s *Ranked) handleJoinSearch(senderId string, packet *packets.JoinSearch) {
 	s.Matchmaker.AddToQueue(senderId)
 
 	for secondId := range s.Queue {
 		if senderId != secondId {
 			room := s.Matchmaker.CreateRoom()
 
-			room.GetPacket(senderId, packets.Packet{SenderId: senderId, Body: packets.ConnectPlayer{Id: senderId}})
-			room.GetPacket(secondId, packets.Packet{SenderId: secondId, Body: packets.ConnectPlayer{Id: secondId}})
+			s.Matchmaker.ConnectToRoom(room.Id(), senderId)
+			s.Matchmaker.ConnectToRoom(room.Id(), secondId)
 
 			s.Matchmaker.RemoveFromQueue(senderId)
 			s.Matchmaker.RemoveFromQueue(secondId)
@@ -43,7 +43,7 @@ func (s *Ranked) handleJoinSearch(senderId string, packet packets.JoinSearch) {
 	}
 }
 
-func (s *Ranked) handleDisconnect(senderId string, packet packets.Disconnect) {
+func (s *Ranked) handleDisconnect(senderId string, packet *packets.Disconnect) {
 	s.Matchmaker.RemoveFromQueue(senderId)
 
 	s.Hub.GetPacket(senderId, packets.Packet{SenderId: senderId, Body: packet})

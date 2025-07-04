@@ -20,3 +20,7 @@ func SetRandom(matchmaker *Matchmaker) {
 func SetRanked(matchmaker *Matchmaker) {
 	matchmaker.ChangeStrategy(&strategies.Ranked{Matchmaker: matchmaker, Hub: matchmaker.hub, Queue: matchmaker.queue})
 }
+
+func SetCustom(matchmaker *Matchmaker) {
+	matchmaker.ChangeStrategy(&strategies.Custom{Matchmaker: matchmaker, Hub: matchmaker.hub})
+}

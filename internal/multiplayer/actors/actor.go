@@ -12,6 +12,7 @@ type Actor interface {
 type Matchmaker interface {
 	Actor
 	CreateRoom() Actor
+	ConnectToRoom(roomId, playerId string)
 	AddToQueue(playerId string)
 	RemoveFromQueue(playerId string)
 }

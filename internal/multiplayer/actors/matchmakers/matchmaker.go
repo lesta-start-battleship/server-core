@@ -66,7 +66,7 @@ func (mm *Matchmaker) ChangeStrategy(newStrategy Strategy) {
 func (mm *Matchmaker) GetPacket(senderId string, packet packets.Packet) {
 	mm.packetChan <- packet
 
-	log.Printf("Matchmaker %q: Received packet from %q", mm.id, packet.SenderId)
+	log.Printf("Matchmaker %q: Received packet %T from %q", mm.id, packet.Body, packet.SenderId)
 }
 
 func (mm *Matchmaker) Start() {
@@ -94,7 +94,7 @@ func (mm *Matchmaker) Stop() {
 	mm.playerRegistry = nil
 	mm.roomRegistry = nil
 
-	log.Println("Matchmaker: Stopped")
+	log.Printf("Matchmaker %q: Stopped", mm.id)
 }
 
 func (mm *Matchmaker) handlePacket(senderId string, packet packets.Packet) {
@@ -106,16 +106,29 @@ func (mm *Matchmaker) CreateRoom() actors.Actor {
 	room := createRoom(id, mm)
 	mm.roomRegistry.Track(id, room)
 
-	log.Printf("Matchmaker: Created room %q", room.Id())
+	log.Printf("Matchmaker %q: Created room %q", mm.id, room.Id())
 
 	return room
+}
+
+func (mm *Matchmaker) ConnectToRoom(roomId, playerId string) {
+	room := mm.roomRegistry.Find(roomId)
+	if room == nil {
+		log.Printf("Matchmaker %q: Room %q is nil", mm.id, roomId)
+
+		return
+	}
+
+	room.GetPacket(playerId, packets.NewConnectPlayer(playerId, playerId))
+
+	log.Printf("Matchmaker %q: Send player %q to room %q", mm.id, playerId, roomId)
 }
 
 func (mm *Matchmaker) DeleteRoom(room *rooms.Room) {
 	mm.roomRegistry.Delete(room.Id())
 	room.Stop()
 
-	log.Printf("Matchmaker: Deregistered room %q", room.Id())
+	log.Printf("Matchmaker: Deleted room %q", room.Id())
 }
 
 func (mm *Matchmaker) AddToQueue(playerId string) {

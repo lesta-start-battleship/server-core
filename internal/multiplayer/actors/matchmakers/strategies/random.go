@@ -15,22 +15,22 @@ type Random struct {
 
 func (s *Random) HandlePacket(senderId string, packet packets.Packet) {
 	switch packet := packet.Body.(type) {
-	case packets.JoinSearch:
+	case *packets.JoinSearch:
 		s.handleJoinSearch(senderId, packet)
-	case packets.Disconnect:
+	case *packets.Disconnect:
 		s.handleDisconnect(senderId, packet)
 	}
 }
 
-func (s *Random) handleJoinSearch(senderId string, packet packets.JoinSearch) {
+func (s *Random) handleJoinSearch(senderId string, packet *packets.JoinSearch) {
 	s.Matchmaker.AddToQueue(senderId)
 
 	for secondId := range s.Queue {
 		if senderId != secondId {
 			room := s.Matchmaker.CreateRoom()
 
-			room.GetPacket(senderId, packets.Packet{SenderId: senderId, Body: packets.ConnectPlayer{Id: senderId}})
-			room.GetPacket(secondId, packets.Packet{SenderId: secondId, Body: packets.ConnectPlayer{Id: secondId}})
+			s.Matchmaker.ConnectToRoom(room.Id(), senderId)
+			s.Matchmaker.ConnectToRoom(room.Id(), secondId)
 
 			s.Matchmaker.RemoveFromQueue(senderId)
 			s.Matchmaker.RemoveFromQueue(secondId)
@@ -40,10 +40,10 @@ func (s *Random) handleJoinSearch(senderId string, packet packets.JoinSearch) {
 	}
 }
 
-func (s *Random) handleDisconnect(senderId string, packet packets.Disconnect) {
+func (s *Random) handleDisconnect(senderId string, packet *packets.Disconnect) {
 	s.Matchmaker.RemoveFromQueue(senderId)
 
-	s.Hub.GetPacket(senderId, packets.Packet{SenderId: senderId, Body: packet})
+	s.Hub.GetPacket(senderId, packets.NewDisconnect(senderId))
 }
 
 func (s *Random) OnExit() {
