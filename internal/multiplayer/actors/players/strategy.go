@@ -15,9 +15,9 @@ type Strategy interface {
 }
 
 func SetInRoom(player *Player, room actors.Actor) {
-	player.ChangeStrategy(&strategies.InRoom{Room: room})
+	player.ChangeStrategy(&strategies.InRoom{Player: player, Room: room})
 }
 
-func SetInSearch(player *Player, matchmaker actors.Actor) {
-	player.ChangeStrategy(&strategies.InSearch{Matchmaker: matchmaker})
+func SetInSearch(player *Player, matchmaker actors.Matchmaker) {
+	player.ChangeStrategy(&strategies.InSearch{Player: player, Matchmaker: matchmaker})
 }

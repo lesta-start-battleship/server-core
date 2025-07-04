@@ -1,6 +1,7 @@
 package rooms
 
 import (
+	"fmt"
 	"lesta-battleship/server-core/internal/multiplayer/actors"
 	"lesta-battleship/server-core/internal/multiplayer/actors/players"
 	"lesta-battleship/server-core/pkg/packets"
@@ -15,12 +16,12 @@ type Room struct {
 
 	playerRegistry players.PlayerRegistry
 
-	matchmaker actors.Actor
+	matchmaker actors.Matchmaker
 
 	packetChan chan packets.Packet
 }
 
-func NewRoom(id string, playerRegistry players.PlayerRegistry, matchmaker actors.Actor) *Room {
+func NewRoom(id string, playerRegistry players.PlayerRegistry, matchmaker actors.Matchmaker) *Room {
 	return &Room{
 		id:      id,
 		players: [MaxPlayers]*players.Player{nil, nil},
@@ -40,11 +41,13 @@ func (r *Room) Id() string {
 func (r *Room) GetPacket(senderId string, packet packets.Packet) {
 	r.packetChan <- packet
 
-	log.Printf("Room %q: Received message from %q", r.id, senderId)
+	log.Printf("Room %q: Received packet %T from %q", r.id, packet.Body, senderId)
 }
 
 func (r *Room) Start() {
 	defer r.Stop()
+
+	log.Printf("Room %q: Started", r.id)
 
 	for packet := range r.packetChan {
 		r.handlePacket(packet.SenderId, packet)
@@ -68,11 +71,11 @@ func (r *Room) Stop() {
 
 func (r *Room) handlePacket(senderId string, packet packets.Packet) {
 	switch packet := packet.Body.(type) {
-	case packets.ConnectPlayer:
+	case *packets.ConnectPlayer:
 		r.handleConnect(senderId, packet)
-	case packets.Disconnect:
+	case *packets.Disconnect:
 		r.handleDisconnect(senderId, packet)
-	case packets.PlayerMessage:
+	case *packets.PlayerMessage:
 		r.handleBroadcast(senderId, packet)
 	default:
 		log.Printf("Room %q: Received incorrect packet %t from %q", r.id, packet, senderId)
@@ -83,13 +86,15 @@ func (r *Room) Full() bool {
 	return r.players[0] != nil && r.players[1] != nil
 }
 
-func (r *Room) handleConnect(senderId string, packet packets.ConnectPlayer) error {
+func (r *Room) handleConnect(senderId string, packet *packets.ConnectPlayer) error {
 	player := r.playerRegistry.Find(senderId)
 
 	for i, position := range r.players {
 		if position == nil {
 			players.SetInRoom(player, r)
 			r.players[i] = player
+
+			player.GetPacket(r.id, packets.NewPlayerMessage(r.id, fmt.Sprintf("Connected to room %q", r.id)))
 
 			log.Printf("Room %q: Connected player %q", r.id, player.Id())
 			log.Printf("Room %q: %v", r.id, r.players)
@@ -101,7 +106,7 @@ func (r *Room) handleConnect(senderId string, packet packets.ConnectPlayer) erro
 	return ErrRoomIsFull
 }
 
-func (r *Room) handleDisconnect(senderId string, packet packets.Disconnect) error {
+func (r *Room) handleDisconnect(senderId string, packet *packets.Disconnect) error {
 	player := r.playerRegistry.Find(senderId)
 
 	for i, position := range r.players {
@@ -109,8 +114,8 @@ func (r *Room) handleDisconnect(senderId string, packet packets.Disconnect) erro
 			players.SetInSearch(player, r.matchmaker)
 			r.players[i] = nil
 
-			log.Printf("Room %q: Disconnected player %q from room", r.id, player.Id())
-			player.GetPacket(senderId, packets.Packet{SenderId: senderId, Body: packet})
+			log.Printf("Room %q: Disconnected player %q", r.id, player.Id())
+			player.GetPacket(senderId, packets.NewDisconnect(senderId))
 
 			return nil
 		}
@@ -119,11 +124,11 @@ func (r *Room) handleDisconnect(senderId string, packet packets.Disconnect) erro
 	return ErrNotConnectedToRoom
 }
 
-func (r *Room) handleBroadcast(senderId string, packet packets.PlayerMessage) {
+func (r *Room) handleBroadcast(senderId string, packet *packets.PlayerMessage) {
 	for _, player := range r.players {
 		log.Printf("Room %q: Iterating through player %v", r.id, player)
 		if player != nil && player.Id() != senderId {
-			player.GetPacket(senderId, packets.Packet{SenderId: senderId, Body: packet})
+			player.GetPacket(senderId, packets.NewPlayerMessage(senderId, packet.Msg))
 		}
 	}
 

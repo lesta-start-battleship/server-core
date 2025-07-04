@@ -46,7 +46,7 @@ func (p *Player) ChangeStrategy(newStrategy Strategy) {
 func (p *Player) GetPacket(senderId string, packet packets.Packet) {
 	p.messageChan <- packet
 
-	log.Printf("Player %q: Received packet from %q", p.id, senderId)
+	log.Printf("Player %q: Received packet %T from %q", p.id, packet.Body, senderId)
 }
 
 func (p *Player) Start() {
@@ -56,6 +56,8 @@ func (p *Player) Start() {
 		}
 		p.Stop()
 	}()
+
+	log.Printf("Player %q: Started", p.id)
 
 	for packet := range p.messageChan {
 		p.handlePacket(packet.SenderId, packet)
@@ -71,7 +73,7 @@ func (p *Player) Stop() {
 		p.conn.Stop()
 	}
 
-	log.Printf("Player %q: Disconnected", p.id)
+	log.Printf("Player %q: Stopped", p.id)
 }
 
 func (p *Player) handlePacket(senderId string, packet packets.Packet) {
@@ -80,6 +82,4 @@ func (p *Player) handlePacket(senderId string, packet packets.Packet) {
 	} else {
 		p.conn.GetPacket(senderId, packet)
 	}
-
-	log.Printf("Player %q: Handled packet from %q", p.id, senderId)
 }
