@@ -2,9 +2,10 @@ package players
 
 import (
 	"fmt"
-	"lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors"
-	"lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors/players/strategies"
-	"lesta-battleship/server-core/pkg/matchmaking/packets"
+
+	"github.com/lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors"
+	"github.com/lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors/players/strategies"
+	"github.com/lesta-battleship/server-core/pkg/matchmaking/packets"
 )
 
 type Strategy interface {

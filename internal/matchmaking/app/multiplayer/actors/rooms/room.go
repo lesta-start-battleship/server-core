@@ -2,10 +2,11 @@ package rooms
 
 import (
 	"fmt"
-	"lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors"
-	"lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors/players"
-	"lesta-battleship/server-core/pkg/matchmaking/packets"
 	"log"
+
+	"github.com/lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors"
+	"github.com/lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors/players"
+	"github.com/lesta-battleship/server-core/pkg/matchmaking/packets"
 )
 
 const MaxPlayers = 2
@@ -116,7 +117,7 @@ func (r *Room) handleDisconnect(senderId string, packet *packets.Disconnect) err
 			return nil
 		}
 	}
-	//TODO: Close Room when empty
+	// TODO: Close Room when empty
 
 	return ErrNotConnectedToRoom
 }

@@ -1,9 +1,10 @@
 package websocket
 
 import (
-	"lesta-battleship/server-core/internal/matchmaking/infra"
-	"lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors"
 	"net/http"
+
+	"github.com/lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors"
+	"github.com/lesta-battleship/server-core/internal/matchmaking/infra"
 
 	"github.com/gorilla/websocket"
 )

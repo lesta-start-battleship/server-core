@@ -1,7 +1,7 @@
 package actors
 
 import (
-	"lesta-battleship/server-core/pkg/matchmaking/packets"
+	"github.com/lesta-battleship/server-core/pkg/matchmaking/packets"
 )
 
 type ClientInterfacer interface {

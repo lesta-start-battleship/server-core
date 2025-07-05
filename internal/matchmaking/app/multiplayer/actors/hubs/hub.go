@@ -1,10 +1,10 @@
 package hubs
 
 import (
-	"lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors/matchmakers"
-	"lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors/players"
-	"lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors/rooms"
-	"lesta-battleship/server-core/pkg/matchmaking/packets"
+	"github.com/lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors/matchmakers"
+	"github.com/lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors/players"
+	"github.com/lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors/rooms"
+	"github.com/lesta-battleship/server-core/pkg/matchmaking/packets"
 	"log"
 )
 

@@ -1,6 +1,6 @@
 package actors
 
-import "lesta-battleship/server-core/pkg/matchmaking/packets"
+import "github.com/lesta-battleship/server-core/pkg/matchmaking/packets"
 
 type Actor interface {
 	Id() string
