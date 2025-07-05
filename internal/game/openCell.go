@@ -1,9 +1,9 @@
 package game
 
-
 type OpenCellCommand struct {
 	Coords    Coord // - получаем от юзера
 	PrevState CellState
+	ShipFound bool
 }
 
 func NewOpenCellCommand(target Coord) *OpenCellCommand {
@@ -20,6 +20,10 @@ func (c *OpenCellCommand) Apply(states *States) error {
 	}
 	c.PrevState = gs.Field[c.Coords.X][c.Coords.Y]
 	gs.Field[c.Coords.X][c.Coords.Y].State = Open
+
+	if c.PrevState.ShipID != Empty {
+		c.ShipFound = true
+	}
 	return nil
 }
 

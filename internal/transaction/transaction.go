@@ -1,7 +1,6 @@
 package transaction
 
 import (
-	"fmt"
 	"lesta-battleship/server-core/internal/game"
 	// "lesta-battleship/server-core/internal/match"
 )
@@ -29,7 +28,7 @@ func (tx *Transaction) Execute(states *game.States) error {
 			for j := i - 1; j >= 0; j-- {
 				tx.commands[j].Undo(states)
 			}
-			return fmt.Errorf("error at step %d: %w", i, err)
+			return err
 		}
 	}
 	return nil

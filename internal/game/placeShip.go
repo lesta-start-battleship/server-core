@@ -2,117 +2,141 @@ package game
 
 import (
 	"errors"
-	//"fmt"
 )
 
 type PlaceShipCommand struct {
 	ship *Ship
 }
 
-func NewPlaceShipCommand(len int, coord Coord, bearings bool) PlaceShipCommand {
-	return PlaceShipCommand{
+func NewPlaceShipCommand(len int, coord Coord, bearings bool) *PlaceShipCommand {
+	return &PlaceShipCommand{
 		ship: &Ship{
-			Len: len,
-			Coords: coord,
+			Len:      len,
+			Coords:   coord,
 			Bearings: bearings,
-			Health: len,
-			Decks: make(map[Coord]bool),
+			Health:   len,
+			Decks:    make(map[Coord]bool),
 		},
 	}
 }
 func (c *PlaceShipCommand) Apply(states *States) error {
 	gs := states.PlayerState
-	// проверка валидности координаты
+
 	if !gs.isInside(c.ship.Coords) {
-		return errors.New("out of bounds")
+		return errors.New("starting coordinate is out of bounds")
 	}
-	// проверка валидности размера корабля
+
+	// Проверка выхода за пределы по длине корабля
+	for i := 0; i < c.ship.Len; i++ {
+		x, y := c.ship.Coords.X, c.ship.Coords.Y
+		if c.ship.Bearings == Vertical {
+			y += i
+		} else {
+			x += i
+		}
+		if !gs.IsInside(x, y) {
+			return errors.New("ship placement goes out of bounds")
+		}
+	}
+
+	// Проверка на пересечение или соседство с другими кораблями
+	for i := -1; i <= c.ship.Len; i++ {
+		for j := -1; j <= 1; j++ {
+			var x, y int
+			if c.ship.Bearings == Vertical {
+				x = c.ship.Coords.X + j
+				y = c.ship.Coords.Y + i
+			} else {
+				x = c.ship.Coords.X + i
+				y = c.ship.Coords.Y + j
+			}
+			if gs.IsInside(x, y) && gs.Field[x][y].ShipID != Empty {
+				return errors.New("ship overlaps or is adjacent to another")
+			}
+		}
+	}
+
+	// Выдача ID
 	if err := issueID(gs, c.ship); err != nil {
 		return err
 	}
-	// проверка валидности места
-	for x := c.ship.Coords.X - 1; x <= c.ship.Coords.X + c.ship.Len + 1; x++ {
-		for y := c.ship.Coords.Y - 1; y <= c.ship.Coords.X + 1; y++ {
-			mx, my := x, y
-			if c.ship.Bearings == Vertical {
-				mx, my = my, mx
-			}
-			
-			if !gs.IsInside(mx, my) || gs.Field[mx][my].ShipID == Empty  {
-				return errors.New("bad place")
-			}
-		}
-	}
 
-	// добавление корабля на карту
-	gs.Ships[c.ship.ID] = c.ship
-
-	// выдача координат кораблю, изменение карты
-	for x := c.ship.Coords.X - 1; x <= c.ship.Coords.X + c.ship.Len; x++ {
-		mx, my := x, c.ship.Coords.Y
+	// Установка палуб и обновление поля
+	for i := 0; i < c.ship.Len; i++ {
+		var x, y int
 		if c.ship.Bearings == Vertical {
-			mx, my = my, mx
+			x = c.ship.Coords.X
+			y = c.ship.Coords.Y + i
+		} else {
+			x = c.ship.Coords.X + i
+			y = c.ship.Coords.Y
 		}
-		c.ship.Decks[Coord{mx, my}] = Whole
-		gs.Field[mx][my].ShipID = c.ship.ID
+		c.ship.Decks[Coord{X: x, Y: y}] = Whole
+		gs.Field[x][y].ShipID = c.ship.ID
 	}
 
-	// изменения юзера
+	// Добавление корабля
+	gs.Ships[c.ship.ID] = c.ship
 	gs.NumShips += 1
 	return nil
 }
 
-func (c *PlaceShipCommand) Undo(states *States) error {
+func (c *PlaceShipCommand) Undo(states *States) {
 	gs := states.PlayerState
-	// изменение карты
-	for x := c.ship.Coords.X - 1; x <= c.ship.Coords.X + c.ship.Len; x++ {
-		mx, my := x, c.ship.Coords.Y
-		if c.ship.Bearings == Vertical {
-			mx, my = my, mx
-		}
-		gs.Field[mx][my].ShipID = Empty
+
+	for coord := range c.ship.Decks {
+		gs.Field[coord.X][coord.Y].ShipID = Empty
 	}
-	// удаление корабля
+
 	gs.Ships[c.ship.ID] = nil
-
-	// изменения юзера
 	gs.NumShips -= 1
+}
 
-	return nil
+func (c *PlaceShipCommand) GetDeckCoords() []Coord {
+	coords := make([]Coord, c.ship.Len)
+	for i := 0; i < c.ship.Len; i++ {
+		x := c.ship.Coords.X
+		y := c.ship.Coords.Y
+		if c.ship.Bearings == Vertical {
+			y += i
+		} else {
+			x += i
+		}
+		coords[i] = Coord{X: x, Y: y}
+	}
+	return coords
 }
 
 func issueID(gs *GameState, ship *Ship) error {
 	switch ship.Len {
 	case Battleship:
-		for i := 1; i < 5; i++ {
+		for i := 1; i <= 4; i++ {
 			if gs.Ships[i] == nil {
-				//gs.Ships[i] = ship
 				ship.ID = i
+				return nil
 			}
-		}  
+		}
 	case Cruiser:
-		for i := 5; i < 8; i++ {
+		for i := 5; i <= 7; i++ {
 			if gs.Ships[i] == nil {
-				//gs.Ships[i] = ship
 				ship.ID = i
+				return nil
 			}
 		}
 	case Destroyer:
-		for i := 8; i < 10; i++ {
+		for i := 8; i <= 9; i++ {
 			if gs.Ships[i] == nil {
-				//gs.Ships[i] = ship
 				ship.ID = i
+				return nil
 			}
 		}
 	case Submarine:
-		for i := 10; i < 11; i++ {
-			if gs.Ships[i] == nil {
-				//gs.Ships[i] = ship
-				ship.ID = i
-			}
+		if gs.Ships[10] == nil {
+			ship.ID = 10
+			return nil
 		}
 	default:
-		return errors.New("incorrect length of ship")
+		return errors.New("invalid ship length")
 	}
-	return nil
+	return errors.New("no available ship of this length")
 }

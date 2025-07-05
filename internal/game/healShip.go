@@ -3,6 +3,7 @@ package game
 import (
 	"errors"
 )
+
 type HealShipCommand struct {
 	Coords Coord // - получаем от юзера
 }
@@ -43,4 +44,8 @@ func (c *HealShipCommand) Undo(states *States) {
 	ship := gs.Ships[shipID]
 	ship.Decks[c.Coords] = Hit
 	ship.Health -= 1
+}
+
+func (c *HealShipCommand) GetHealedCoord() Coord {
+	return c.Coords
 }

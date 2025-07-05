@@ -4,10 +4,10 @@ import "errors"
 
 type RemoveShipCommand struct {
 	Coords Coord // - получаем от юзера
-	ship *Ship // - инициализирует код и использует для бекапа
+	ship   *Ship // - инициализирует код и использует для бекапа
 }
 
-func NewRemoveShipCommand(target Coord)*RemoveShipCommand {
+func NewRemoveShipCommand(target Coord) *RemoveShipCommand {
 	return &RemoveShipCommand{
 		Coords: target,
 	}
@@ -15,45 +15,73 @@ func NewRemoveShipCommand(target Coord)*RemoveShipCommand {
 
 func (c *RemoveShipCommand) Apply(states *States) error {
 	gs := states.PlayerState
-	// проверка валидности координаты
+
 	if !gs.isInside(c.Coords) {
 		return errors.New("out of bounds")
 	}
-	if cellState := gs.Field[c.Coords.X][c.Coords.Y]; cellState.ShipID != Empty  {
-		c.ship = gs.Ships[cellState.ShipID]
-		for x := c.ship.Coords.X - 1; x <= c.ship.Coords.X + c.ship.Len; x++ {
-			mx, my := x, c.ship.Coords.Y
-			if c.ship.Bearings == Vertical {
-				mx, my = my, mx
-			}
-			gs.Field[mx][my].ShipID = Empty
-		}
-		// удаление корабля
-		gs.Ships[c.ship.ID] = nil
 
-		// изменения юзера
-		gs.NumShips -= 1
-	} else {
+	cell := gs.Field[c.Coords.X][c.Coords.Y]
+	if cell.ShipID == Empty {
 		return errors.New("empty cell")
 	}
+
+	ship := gs.Ships[cell.ShipID]
+	if ship == nil {
+		return errors.New("ship not found")
+	}
+
+	c.ship = ship // backup
+
+	// Удаляем палубы
+	for i := 0; i < ship.Len; i++ {
+		x := ship.Coords.X
+		y := ship.Coords.Y
+		if ship.Bearings == Vertical {
+			y += i
+		} else {
+			x += i
+		}
+		gs.Field[x][y].ShipID = Empty
+	}
+
+	// Удаляем корабль
+	gs.Ships[ship.ID] = nil
+	gs.NumShips--
+
 	return nil
 }
 
 func (c *RemoveShipCommand) Undo(states *States) {
 	gs := states.PlayerState
-	// добавление корабля на карту
+
 	gs.Ships[c.ship.ID] = c.ship
-
-	// изменение карты
-	for x := c.ship.Coords.X - 1; x <= c.ship.Coords.X + c.ship.Len; x++ {
-		mx, my := x, c.ship.Coords.Y
+	for i := 0; i < c.ship.Len; i++ {
+		x := c.ship.Coords.X
+		y := c.ship.Coords.Y
 		if c.ship.Bearings == Vertical {
-			mx, my = my, mx
+			y += i
+		} else {
+			x += i
 		}
-		// c.ship.Decks[Coord{mx, my}] = Whole
-		gs.Field[mx][my].ShipID = c.ship.ID
+		gs.Field[x][y].ShipID = c.ship.ID
 	}
+	gs.NumShips++
+}
 
-	// изменения юзера
-	gs.NumShips += 1
+func (c *RemoveShipCommand) GetDeckCoords() []Coord {
+	if c.ship == nil {
+		return nil
+	}
+	coords := make([]Coord, c.ship.Len)
+	for i := 0; i < c.ship.Len; i++ {
+		x := c.ship.Coords.X
+		y := c.ship.Coords.Y
+		if c.ship.Bearings == Vertical {
+			y += i
+		} else {
+			x += i
+		}
+		coords[i] = Coord{X: x, Y: y}
+	}
+	return coords
 }
