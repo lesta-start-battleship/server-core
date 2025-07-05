@@ -7,6 +7,12 @@ type RemoveShipCommand struct {
 	ship *Ship // - инициализирует код и использует для бекапа
 }
 
+func NewRemoveShipCommand(target Coord)*RemoveShipCommand {
+	return &RemoveShipCommand{
+		Coords: target,
+	}
+}
+
 func (c *RemoveShipCommand) Apply(gs *GameState) error {
 	// проверка валидности координаты
 	if !gs.isInside(c.Coords) {

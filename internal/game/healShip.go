@@ -7,6 +7,10 @@ type HealShipCommand struct {
 	Coords Coord // - получаем от юзера
 }
 
+func NewHealShipCommand(target Coord) *HealShipCommand {
+	return &HealShipCommand{Coords: target}
+}
+
 func (c *HealShipCommand) Apply(gs *GameState) error {
 	// проверяем валидность координаты
 	if !gs.isInside(c.Coords) {

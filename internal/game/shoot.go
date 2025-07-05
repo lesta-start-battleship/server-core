@@ -6,9 +6,13 @@ import (
 )
 
 type ShootCommand struct {
-	Target Coord
+	Target Coord // получаем при создании
 	PrevState   CellState
 	Success bool
+}
+
+func NewShootCommand(target Coord) *ShootCommand {
+	return &ShootCommand{Target: target}
 }
 
 func (c *ShootCommand) Apply(gs *GameState) error {
