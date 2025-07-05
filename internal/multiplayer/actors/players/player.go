@@ -1,6 +1,7 @@
 package players
 
 import (
+	"lesta-battleship/server-core/internal/multiplayer/actors"
 	"lesta-battleship/server-core/pkg/packets"
 	"log"
 )
@@ -9,12 +10,12 @@ type Player struct {
 	id       string
 	strategy Strategy
 
-	conn ClientInterfacer
+	conn actors.ClientInterfacer
 
 	messageChan chan packets.Packet
 }
 
-func NewPlayer(id string, conn ClientInterfacer) *Player {
+func NewPlayer(id string, conn actors.ClientInterfacer) *Player {
 	player := &Player{
 		id:       id,
 		strategy: nil,

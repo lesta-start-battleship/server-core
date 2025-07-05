@@ -95,5 +95,4 @@ func (h *Hub) handleDisconnect(senderId string, packet *packets.Disconnect) {
 	h.playerRegistry.Delete(player.Id())
 
 	log.Printf("Hub: Disconnected player %q", player.Id())
-	log.Printf("Hub: %+v", h.playerRegistry.Players())
 }

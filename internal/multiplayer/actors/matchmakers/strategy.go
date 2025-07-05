@@ -13,6 +13,16 @@ type Strategy interface {
 	fmt.Stringer
 }
 
+var strategiesMap = map[MatchType]func(*Matchmaker){
+	RandomMatch: SetRandom,
+	RankedMatch: SetRanked,
+	CustomMatch: SetCustom,
+}
+
+func SetStrategy(matchmaker *Matchmaker, matchType MatchType) {
+	strategiesMap[matchType](matchmaker)
+}
+
 func SetRandom(matchmaker *Matchmaker) {
 	matchmaker.ChangeStrategy(&strategies.Random{Matchmaker: matchmaker, Hub: matchmaker.hub, Queue: matchmaker.queue})
 }

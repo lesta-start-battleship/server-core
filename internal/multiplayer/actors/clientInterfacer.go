@@ -1,11 +1,12 @@
-package players
+package actors
 
 import (
 	"lesta-battleship/server-core/pkg/packets"
 )
 
 type ClientInterfacer interface {
-	ConnectTo(*Player)
+	Id() string
+	ConnectTo(Actor)
 	GetPacket(senderId string, packet packets.Packet)
 	ReadPump()
 	WritePump()

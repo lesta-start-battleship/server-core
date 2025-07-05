@@ -14,6 +14,10 @@ type Strategy interface {
 	fmt.Stringer
 }
 
+func SetInHub(player *Player, hub actors.Actor) {
+	player.ChangeStrategy(&strategies.InHub{Player: player, Hub: hub})
+}
+
 func SetInRoom(player *Player, room actors.Actor) {
 	player.ChangeStrategy(&strategies.InRoom{Player: player, Room: room})
 }

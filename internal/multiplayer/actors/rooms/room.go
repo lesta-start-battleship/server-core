@@ -15,8 +15,7 @@ type Room struct {
 	players [MaxPlayers]*players.Player
 
 	playerRegistry players.PlayerRegistry
-
-	matchmaker actors.Matchmaker
+	matchmaker     actors.Matchmaker
 
 	packetChan chan packets.Packet
 }
@@ -45,7 +44,12 @@ func (r *Room) GetPacket(senderId string, packet packets.Packet) {
 }
 
 func (r *Room) Start() {
-	defer r.Stop()
+	defer func() {
+		if _, ok := <-r.packetChan; !ok {
+			close(r.packetChan)
+		}
+		r.Stop()
+	}()
 
 	log.Printf("Room %q: Started", r.id)
 
@@ -62,10 +66,6 @@ func (r *Room) Stop() {
 		}
 	}
 
-	if _, ok := <-r.packetChan; !ok {
-		close(r.packetChan)
-	}
-
 	log.Printf("Room %q: Closed", r.id)
 }
 
@@ -80,10 +80,6 @@ func (r *Room) handlePacket(senderId string, packet packets.Packet) {
 	default:
 		log.Printf("Room %q: Received incorrect packet %t from %q", r.id, packet, senderId)
 	}
-}
-
-func (r *Room) Full() bool {
-	return r.players[0] != nil && r.players[1] != nil
 }
 
 func (r *Room) handleConnect(senderId string, packet *packets.ConnectPlayer) error {
@@ -120,6 +116,7 @@ func (r *Room) handleDisconnect(senderId string, packet *packets.Disconnect) err
 			return nil
 		}
 	}
+	//TODO: Close Room when empty
 
 	return ErrNotConnectedToRoom
 }

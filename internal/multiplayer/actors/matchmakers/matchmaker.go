@@ -9,37 +9,34 @@ import (
 	"log"
 )
 
-type MatchType int
-
-const (
-	RandomMatch MatchType = iota
-	RankedMatch
-	GuildMatch
-	CustomMatch
-)
-
 type Matchmaker struct {
 	id    string
+	strategy Strategy
 	queue map[string]*players.Player
 
 	playerRegistry players.PlayerRegistry
 	roomRegistry   rooms.RoomRegistry
 
 	hub      actors.Actor
-	strategy Strategy
 
 	packetChan chan packets.Packet
 }
 
-func NewMatchmaker(id string, playerRegistry players.PlayerRegistry, roomRegistry rooms.RoomRegistry) *Matchmaker {
+func NewMatchmaker(
+	id string,
+	playerRegistry players.PlayerRegistry,
+	roomRegistry rooms.RoomRegistry,
+	hub actors.Actor,
+) *Matchmaker {
 	return &Matchmaker{
 		id:    id,
+		strategy: nil,
 		queue: make(map[string]*players.Player),
 
 		playerRegistry: playerRegistry,
 		roomRegistry:   roomRegistry,
 
-		hub: nil,
+		hub: hub,
 
 		packetChan: make(chan packets.Packet, 256),
 	}
@@ -47,10 +44,6 @@ func NewMatchmaker(id string, playerRegistry players.PlayerRegistry, roomRegistr
 
 func (mm *Matchmaker) Id() string {
 	return mm.id
-}
-
-func (mm *Matchmaker) ConnectTo(hub actors.Actor) {
-	mm.hub = hub
 }
 
 func (mm *Matchmaker) ChangeStrategy(newStrategy Strategy) {
@@ -90,9 +83,16 @@ func (mm *Matchmaker) Stop() {
 	}
 	mm.strategy = nil
 
-	mm.hub = nil
+	for id, player := range mm.queue {
+		mm.playerRegistry.Delete(id)
+		player.Stop()
+	}
+	mm.queue = nil
+
 	mm.playerRegistry = nil
 	mm.roomRegistry = nil
+
+	mm.hub = nil
 
 	log.Printf("Matchmaker %q: Stopped", mm.id)
 }
