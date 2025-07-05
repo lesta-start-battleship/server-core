@@ -1,10 +1,10 @@
 package main
 
 import (
-	"lesta-battleship/server-core/internal/api/websocket"
-	"lesta-battleship/server-core/internal/infra/registries"
-	"lesta-battleship/server-core/internal/app/multiplayer"
-	"lesta-battleship/server-core/internal/app/multiplayer/actors/matchmakers"
+	"github.com/lesta-battleship/server-core/internal/matchmaking/api/websocket"
+	"github.com/lesta-battleship/server-core/internal/matchmaking/app/multiplayer"
+	"github.com/lesta-battleship/server-core/internal/matchmaking/app/multiplayer/actors/matchmakers"
+	"github.com/lesta-battleship/server-core/internal/matchmaking/infra/registries"
 
 	"github.com/gin-gonic/gin"
 )

@@ -6,11 +6,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"lesta-battleship/server-core/pkg/packets"
 	"log"
 	"net/url"
 	"os"
 	"os/signal"
+
+	"github.com/lesta-battleship/server-core/pkg/matchmaking/packets"
 
 	"github.com/gorilla/websocket"
 )
