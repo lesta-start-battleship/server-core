@@ -1,7 +1,7 @@
 package players
 
 import (
-	"lesta-battleship/server-core/internal/multiplayer/actors"
+	"lesta-battleship/server-core/internal/app/multiplayer/actors"
 	"lesta-battleship/server-core/pkg/packets"
 	"log"
 )

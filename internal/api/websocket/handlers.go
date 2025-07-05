@@ -1,8 +1,8 @@
 package websocket
 
 import (
-	"lesta-battleship/server-core/internal/multiplayer"
-	"lesta-battleship/server-core/internal/multiplayer/actors/matchmakers"
+	"lesta-battleship/server-core/internal/app/multiplayer"
+	"lesta-battleship/server-core/internal/app/multiplayer/actors/matchmakers"
 
 	"github.com/gin-gonic/gin"
 )

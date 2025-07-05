@@ -1,6 +1,6 @@
 package registries
 
-import "lesta-battleship/server-core/internal/multiplayer/actors/matchmakers"
+import "lesta-battleship/server-core/internal/app/multiplayer/actors/matchmakers"
 
 type MatchmakerRegistry struct {
 	players map[string]*matchmakers.Matchmaker

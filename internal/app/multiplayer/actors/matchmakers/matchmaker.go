@@ -2,22 +2,22 @@ package matchmakers
 
 import (
 	"lesta-battleship/server-core/internal/infra"
-	"lesta-battleship/server-core/internal/multiplayer/actors"
-	"lesta-battleship/server-core/internal/multiplayer/actors/players"
-	"lesta-battleship/server-core/internal/multiplayer/actors/rooms"
+	"lesta-battleship/server-core/internal/app/multiplayer/actors"
+	"lesta-battleship/server-core/internal/app/multiplayer/actors/players"
+	"lesta-battleship/server-core/internal/app/multiplayer/actors/rooms"
 	"lesta-battleship/server-core/pkg/packets"
 	"log"
 )
 
 type Matchmaker struct {
-	id    string
+	id       string
 	strategy Strategy
-	queue map[string]*players.Player
+	queue    map[string]*players.Player
 
 	playerRegistry players.PlayerRegistry
 	roomRegistry   rooms.RoomRegistry
 
-	hub      actors.Actor
+	hub actors.Actor
 
 	packetChan chan packets.Packet
 }
@@ -29,9 +29,9 @@ func NewMatchmaker(
 	hub actors.Actor,
 ) *Matchmaker {
 	return &Matchmaker{
-		id:    id,
+		id:       id,
 		strategy: nil,
-		queue: make(map[string]*players.Player),
+		queue:    make(map[string]*players.Player),
 
 		playerRegistry: playerRegistry,
 		roomRegistry:   roomRegistry,

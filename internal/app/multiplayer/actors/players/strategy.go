@@ -2,8 +2,8 @@ package players
 
 import (
 	"fmt"
-	"lesta-battleship/server-core/internal/multiplayer/actors"
-	"lesta-battleship/server-core/internal/multiplayer/actors/players/strategies"
+	"lesta-battleship/server-core/internal/app/multiplayer/actors"
+	"lesta-battleship/server-core/internal/app/multiplayer/actors/players/strategies"
 	"lesta-battleship/server-core/pkg/packets"
 )
 

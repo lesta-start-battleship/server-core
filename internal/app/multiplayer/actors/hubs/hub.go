@@ -1,9 +1,9 @@
 package hubs
 
 import (
-	"lesta-battleship/server-core/internal/multiplayer/actors/matchmakers"
-	"lesta-battleship/server-core/internal/multiplayer/actors/players"
-	"lesta-battleship/server-core/internal/multiplayer/actors/rooms"
+	"lesta-battleship/server-core/internal/app/multiplayer/actors/matchmakers"
+	"lesta-battleship/server-core/internal/app/multiplayer/actors/players"
+	"lesta-battleship/server-core/internal/app/multiplayer/actors/rooms"
 	"lesta-battleship/server-core/pkg/packets"
 	"log"
 )

@@ -2,7 +2,7 @@ package websocket
 
 import (
 	"lesta-battleship/server-core/internal/infra"
-	"lesta-battleship/server-core/internal/multiplayer/actors"
+	"lesta-battleship/server-core/internal/app/multiplayer/actors"
 	"net/http"
 
 	"github.com/gorilla/websocket"

@@ -2,7 +2,7 @@ package matchmakers
 
 import (
 	"fmt"
-	"lesta-battleship/server-core/internal/multiplayer/actors/matchmakers/strategies"
+	"lesta-battleship/server-core/internal/app/multiplayer/actors/matchmakers/strategies"
 	"lesta-battleship/server-core/pkg/packets"
 )
 
