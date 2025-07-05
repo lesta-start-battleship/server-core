@@ -1,6 +1,6 @@
 package handlers
 
-import "lesta-battleship/server-core/internal/game"
+import "lesta-battleship/server-core/internal/game-core/game"
 
 type EventInput struct {
 	Event string    `json:"event"`

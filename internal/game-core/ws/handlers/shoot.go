@@ -2,15 +2,17 @@ package handlers
 
 import (
 	"errors"
-	"lesta-battleship/server-core/internal/game"
-	"lesta-battleship/server-core/internal/match"
-	"lesta-battleship/server-core/internal/transaction"
+	"lesta-battleship/server-core/internal/game-core/event"
+	"lesta-battleship/server-core/internal/game-core/game"
+	"lesta-battleship/server-core/internal/game-core/match"
+	"lesta-battleship/server-core/internal/game-core/transaction"
 	"log"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
 
-func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.Conn, input EventInput) error {
+func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.Conn, input EventInput, dispatcher *event.MatchEventDispatcher) error {
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 
@@ -23,6 +25,12 @@ func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.
 	}
 	if room.Turn != player.ID {
 		err := errors.New("not your turn")
+		Send(conn, "shoot_error", err.Error())
+		return err
+	}
+
+	if input.X < 0 || input.X >= 10 || input.Y < 0 || input.Y >= 10 {
+		err := errors.New("coordinates out of bounds")
 		Send(conn, "shoot_error", err.Error())
 		return err
 	}
@@ -79,6 +87,31 @@ func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.
 	if gameOver {
 		room.Status = "ended"
 		room.WinnerID = player.ID
+
+		var winnerID, loserID string
+		if room.Player1.ID == player.ID {
+			winnerID = room.Player1.ID
+			loserID = room.Player2.ID
+		} else {
+			winnerID = room.Player2.ID
+			loserID = room.Player1.ID
+		}
+
+		matchResult := event.MatchResult{
+			WinnerID:  winnerID,
+			LoserID:   loserID,
+			MatchID:   room.RoomID,
+			MatchDate: time.Now().UTC(),
+			MatchType: room.Mode,
+			Experience: &event.Experience{
+				WinnerGain: 30,
+				LoserGain:  -15,
+			},
+		}
+
+		if err := dispatcher.DispatchMatchResult(matchResult); err != nil {
+			log.Printf("[KAFKA] Failed to dispatch match result: %v", err)
+		}
 
 		Broadcast(room, "game_end", map[string]any{"winner": player.ID})
 		if room.Player1.Conn != nil {

@@ -1,8 +1,8 @@
 package api
 
 import (
-	"lesta-battleship/server-core/internal/game"
-	"lesta-battleship/server-core/internal/match"
+	"lesta-battleship/server-core/internal/game-core/game"
+	"lesta-battleship/server-core/internal/game-core/match"
 	"net/http"
 	"time"
 

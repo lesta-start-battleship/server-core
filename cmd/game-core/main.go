@@ -1,15 +1,28 @@
 package main
 
 import (
-	"lesta-battleship/server-core/internal/api"
-	"lesta-battleship/server-core/internal/ws"
+	"lesta-battleship/server-core/internal/game-core/api"
+	"lesta-battleship/server-core/internal/game-core/config"
+	"lesta-battleship/server-core/internal/game-core/event"
+	"lesta-battleship/server-core/internal/game-core/infra/kafka"
+	"log"
 
 	"github.com/gin-gonic/gin"
 )
 
 func main() {
-	r := gin.Default()
-	r.POST("/start-match", api.StartMatch)
-	r.GET("/ws", ws.WebSocketHandler)
-	r.Run(":8080")
+	producer, err := kafka.NewProducer(config.KafkaBrokers, config.TopicsToSend)
+	if err != nil {
+		log.Fatalf("Failed to create Kafka producer: %v", err)
+	}
+	defer producer.Close()
+
+	publisher := event.NewKafkaMatchEventPublisher(producer)
+	dispatcher := event.NewMatchEventDispatcher(publisher)
+
+	router := gin.Default()
+
+	api.SetupRoutes(router, dispatcher)
+
+	router.Run(":8080")
 }

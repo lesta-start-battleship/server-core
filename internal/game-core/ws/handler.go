@@ -2,9 +2,10 @@ package ws
 
 import (
 	"encoding/json"
-	"lesta-battleship/server-core/internal/game"
-	"lesta-battleship/server-core/internal/match"
-	"lesta-battleship/server-core/internal/ws/handlers"
+	"lesta-battleship/server-core/internal/game-core/event"
+	"lesta-battleship/server-core/internal/game-core/game"
+	"lesta-battleship/server-core/internal/game-core/match"
+	"lesta-battleship/server-core/internal/game-core/ws/handlers"
 
 	"log"
 	"net/http"
@@ -17,7 +18,7 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(r *http.Request) bool { return true },
 }
 
-func WebSocketHandler(c *gin.Context) {
+func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 	roomID := c.Query("room_id")
 	playerID := c.Query("player_id")
 
@@ -87,7 +88,7 @@ func WebSocketHandler(c *gin.Context) {
 			}
 
 		case "shoot":
-			if err := handlers.HandleFire(room, player, conn, input); err != nil {
+			if err := handlers.HandleFire(room, player, conn, input, dispatcher); err != nil {
 				log.Printf("[WS] Shoot error: %v", err)
 				continue
 			}

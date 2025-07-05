@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"encoding/json"
-	"lesta-battleship/server-core/internal/match"
+	"lesta-battleship/server-core/internal/game-core/match"
 	"log"
 
 	"github.com/gorilla/websocket"
