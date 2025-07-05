@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"flag"
 	"fmt"
 	"lesta-battleship/server-core/pkg/packets"
 	"log"
@@ -12,8 +15,15 @@ import (
 	"github.com/gorilla/websocket"
 )
 
+var (
+	pathFlag  = flag.String("path", "/random", "")
+	queryFlag = flag.String("query", "", "")
+)
+
 func main() {
-	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "/ws"}
+	flag.Parse()
+
+	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: *pathFlag, RawQuery: *queryFlag}
 	log.Printf("connecting to %s", u.String())
 	conn, _, err := websocket.DefaultDialer.Dial(u.String(), nil)
 	if err != nil {
@@ -27,33 +37,65 @@ func main() {
 	go func() {
 		for {
 			var packet packets.Packet
-			conn.ReadJSON(&packet)
-			if err != nil {
+			if err := conn.ReadJSON(&packet); err != nil {
 				log.Println("read err: ", err)
 				return
 			}
-			log.Println(packet)
+
+			fmt.Println(packet.Body)
 		}
 	}()
 
-	for {
-		var text string
-		fmt.Scanln(&text)
-		msg := packets.PlayerMessage{Msg: text}
-		packet := packets.Packet{SenderId: "", Body: msg}
+	// id := rand.Text()
 
-		// err := conn.WriteMessage(websocket.TextMessage, []byte(text))
-		err := conn.WriteJSON(packet)
-		if err != nil {
-			log.Println("write err: ", err)
-			return
-		}
+	go func() {
+		for {
+			select {
+			default:
+				var text string
+				fmt.Scanln(&text)
 
-		select {
-		default:
-			continue
-		case <-done.Done():
-			return
+				switch text {
+				case "quit":
+					SendPacket(conn, packets.NewDisconnect(""))
+
+					cancel()
+
+					return
+				case "create":
+					SendPacket(conn, packets.NewCreateRoom(""))
+				case "join":
+					var roomId string
+					fmt.Scanln(&roomId)
+
+					SendPacket(conn, packets.NewJoinRoom("", roomId))
+				default:
+					SendPacket(conn, packets.NewPlayerMessage("", text))
+				}
+			case <-done.Done():
+				conn.WriteMessage(websocket.CloseMessage,
+					websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+				log.Println("Closed")
+			}
 		}
+	}()
+
+	<-done.Done()
+}
+
+func SendPacket(conn *websocket.Conn, packet packets.Packet) {
+	// packet := packets.Packet{SenderId: senderId, Type: msg.String(), Body: msg}
+
+	buffer := new(bytes.Buffer)
+	json.NewEncoder(buffer).Encode(packet)
+
+	test := packets.Packet{}
+	json.Unmarshal(buffer.Bytes(), &test)
+
+	err := conn.WriteMessage(websocket.TextMessage, buffer.Bytes())
+	// err := conn.WriteJSON(packet)
+	if err != nil {
+		log.Println("write err: ", err)
+		return
 	}
 }

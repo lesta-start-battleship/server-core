@@ -5,5 +5,11 @@ build:
 run-server:
   ./tmp/server
 
-run-client:
-  ./tmp/client
+run-random:
+  ./tmp/client -path=/join/random
+
+run-ranked:
+  ./tmp/client -path=/join/ranked
+
+run-custom:
+  ./tmp/client -path=/join/custom
