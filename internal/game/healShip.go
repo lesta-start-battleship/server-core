@@ -11,7 +11,8 @@ func NewHealShipCommand(target Coord) *HealShipCommand {
 	return &HealShipCommand{Coords: target}
 }
 
-func (c *HealShipCommand) Apply(gs *GameState) error {
+func (c *HealShipCommand) Apply(states *States) error {
+	gs := states.PlayerState
 	// проверяем валидность координаты
 	if !gs.isInside(c.Coords) {
 		return errors.New("out of bounds")
@@ -36,7 +37,8 @@ func (c *HealShipCommand) Apply(gs *GameState) error {
 	return nil
 }
 
-func (c *HealShipCommand) Undo(gs *GameState) {
+func (c *HealShipCommand) Undo(states *States) {
+	gs := states.PlayerState
 	shipID := gs.Field[c.Coords.X][c.Coords.Y].ShipID
 	ship := gs.Ships[shipID]
 	ship.Decks[c.Coords] = Hit

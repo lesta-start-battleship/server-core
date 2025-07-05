@@ -3,11 +3,12 @@ package transaction
 import (
 	"fmt"
 	"lesta-battleship/server-core/internal/game"
+	// "lesta-battleship/server-core/internal/match"
 )
 
 type Command interface {
-	Apply(gs *game.GameState) error
-	Undo(gs *game.GameState)
+	Apply(states *game.States) error
+	Undo(states *game.States)
 }
 
 type Transaction struct {
@@ -22,11 +23,11 @@ func (tx *Transaction) Add(cmd Command) {
 	tx.commands = append(tx.commands, cmd)
 }
 
-func (tx *Transaction) Execute(gs *game.GameState) error {
+func (tx *Transaction) Execute(states *game.States) error {
 	for i, cmd := range tx.commands {
-		if err := cmd.Apply(gs); err != nil {
+		if err := cmd.Apply(states); err != nil {
 			for j := i - 1; j >= 0; j-- {
-				tx.commands[j].Undo(gs)
+				tx.commands[j].Undo(states)
 			}
 			return fmt.Errorf("error at step %d: %w", i, err)
 		}

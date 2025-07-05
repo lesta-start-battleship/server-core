@@ -20,7 +20,8 @@ func NewPlaceShipCommand(len int, coord Coord, bearings bool) PlaceShipCommand {
 		},
 	}
 }
-func (c *PlaceShipCommand) Apply(gs *GameState) error {
+func (c *PlaceShipCommand) Apply(states *States) error {
+	gs := states.PlayerState
 	// проверка валидности координаты
 	if !gs.isInside(c.ship.Coords) {
 		return errors.New("out of bounds")
@@ -61,7 +62,8 @@ func (c *PlaceShipCommand) Apply(gs *GameState) error {
 	return nil
 }
 
-func (c *PlaceShipCommand) Undo(gs *GameState) error {
+func (c *PlaceShipCommand) Undo(states *States) error {
+	gs := states.PlayerState
 	// изменение карты
 	for x := c.ship.Coords.X - 1; x <= c.ship.Coords.X + c.ship.Len; x++ {
 		mx, my := x, c.ship.Coords.Y

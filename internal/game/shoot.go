@@ -15,7 +15,8 @@ func NewShootCommand(target Coord) *ShootCommand {
 	return &ShootCommand{Target: target}
 }
 
-func (c *ShootCommand) Apply(gs *GameState) error {
+func (c *ShootCommand) Apply(states *States) error {
+	gs := states.EnemyState
 	if !gs.isInside(c.Target) {
 		return errors.New("out of bounds")
 	}
@@ -34,7 +35,8 @@ func (c *ShootCommand) Apply(gs *GameState) error {
 	return nil
 }
 
-func (c *ShootCommand) Undo(gs *GameState) {
+func (c *ShootCommand) Undo(states *States) {
+	gs := states.EnemyState
 	if c.Success {
 		ship := gs.Ships[c.PrevState.ShipID]
 		ship.Decks[c.Target] = Whole

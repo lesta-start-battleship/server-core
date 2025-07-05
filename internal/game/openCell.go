@@ -1,7 +1,8 @@
 package game
 
+
 type OpenCellCommand struct {
-	Coords Coord // - получаем от юзера
+	Coords    Coord // - получаем от юзера
 	PrevState CellState
 }
 
@@ -11,8 +12,9 @@ func NewOpenCellCommand(target Coord) *OpenCellCommand {
 	}
 }
 
-func (c *OpenCellCommand) Apply(gs *GameState) error {
-	// проверка валидности координаты 
+func (c *OpenCellCommand) Apply(states *States) error {
+	gs := states.EnemyState
+	// проверка валидности координаты
 	if !gs.isInside(c.Coords) {
 		return nil
 	}
@@ -21,9 +23,10 @@ func (c *OpenCellCommand) Apply(gs *GameState) error {
 	return nil
 }
 
-func (c *OpenCellCommand) Undo(gs *GameState) {
+func (c *OpenCellCommand) Undo(states *States) {
+	gs := states.EnemyState
 	if !gs.isInside(c.Coords) {
-		return 
+		return
 	}
 	gs.Field[c.Coords.X][c.Coords.Y] = c.PrevState
 }

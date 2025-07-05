@@ -34,6 +34,11 @@ type GameState struct {
 	// shipIDSeq int // <-- Add this line
 }
 
+type States struct {
+	PlayerState *GameState
+	EnemyState *GameState
+} 
+
 type CellState struct {
 	State int `json:"state"`
 	ShipID int `json:"shipid"`

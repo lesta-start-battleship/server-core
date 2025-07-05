@@ -12,7 +12,7 @@ import (
 type PlayerConn struct {
 	ID    string
 	Ready bool
-	State *game.GameState
+	States *game.States // ВАЖНО чтобы  при создании GameRoom было создано всего 2 GameState, а не 4
 	Conn  *websocket.Conn
 }
 

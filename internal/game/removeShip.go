@@ -13,7 +13,8 @@ func NewRemoveShipCommand(target Coord)*RemoveShipCommand {
 	}
 }
 
-func (c *RemoveShipCommand) Apply(gs *GameState) error {
+func (c *RemoveShipCommand) Apply(states *States) error {
+	gs := states.PlayerState
 	// проверка валидности координаты
 	if !gs.isInside(c.Coords) {
 		return errors.New("out of bounds")
@@ -38,7 +39,8 @@ func (c *RemoveShipCommand) Apply(gs *GameState) error {
 	return nil
 }
 
-func (c *RemoveShipCommand) Undo(gs *GameState) {
+func (c *RemoveShipCommand) Undo(states *States) {
+	gs := states.PlayerState
 	// добавление корабля на карту
 	gs.Ships[c.ship.ID] = c.ship
 
