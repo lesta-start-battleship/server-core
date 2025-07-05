@@ -1,0 +1,5 @@
+build:
+  go build -o ./tmp/server ./main.go
+
+run-server:
+  ./tmp/server
