@@ -7,4 +7,5 @@ type EventInput struct {
 	Ship  game.Ship `json:"ship"`
 	X     int       `json:"x"`
 	Y     int       `json:"y"`
+	ItemID int 		`json:"itemid"`
 }

@@ -63,8 +63,12 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 			Ship  game.Ship `json:"ship"`
 			X     int       `json:"x"`
 			Y     int       `json:"y"`
+			ItemID int 		`json:"itemid"`
 		}
-		_ = json.Unmarshal(msg, &input)
+		if err = json.Unmarshal(msg, &input); err != nil {
+			log.Println("[WS] JSON unmarshal error:", err)
+			continue
+		}
 
 		log.Printf("[WS] Event received from %s: %s\n", playerID, input.Event)
 
@@ -93,18 +97,24 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 				continue
 			}
 
-		case "heal_ship":
+		case "heal_ship": // TODO: прямого доступа снаружи к данной функциональности быть не должно
 			if err := handlers.HandleHealShip(room, player, conn, input); err != nil {
 				log.Printf("[WS] HealShip error: %v", err)
 				continue
 			}
 
-		case "open_cell":
+		case "open_cell": // TODO: прямого доступа снаружи к данной функциональности быть не должно
 			if err := handlers.HandleOpenCell(room, player, conn, input); err != nil {
 				log.Printf("[WS] OpenCell error: %v", err)
 				continue
 			}
 
+		case "item":
+			if err := handlers.HandleItem(room, player, conn, input); err != nil {
+				log.Printf("[WS] Item error: %v", err)
+				continue
+			}
+			
 		default:
 			handlers.Send(conn, "error", "unknown event")
 		}
