@@ -2,9 +2,10 @@ package ws
 
 import (
 	"encoding/json"
-	"lesta-battleship/server-core/internal/game-core/event"
-	"lesta-battleship/server-core/internal/game-core/match"
-	"lesta-battleship/server-core/internal/game-core/ws/handlers"
+
+	"github.com/lesta-battleship/server-core/internal/event"
+	"github.com/lesta-battleship/server-core/internal/match"
+	"github.com/lesta-battleship/server-core/internal/ws/handlers"
 
 	"log"
 	"net/http"

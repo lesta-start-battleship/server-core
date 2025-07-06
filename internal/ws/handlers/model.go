@@ -1,8 +1,8 @@
 package handlers
 
 import (
-	"lesta-battleship/server-core/internal/game-core/game"
-	"lesta-battleship/server-core/internal/game-core/items"
+	"github.com/lesta-battleship/server-core/internal/game"
+	"github.com/lesta-battleship/server-core/internal/items"
 )
 
 const (

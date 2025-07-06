@@ -1,8 +1,8 @@
 package match
 
 import (
-	"lesta-battleship/server-core/internal/game-core/game"
-	"lesta-battleship/server-core/internal/game-core/items"
+	"github.com/lesta-battleship/server-core/internal/game"
+	"github.com/lesta-battleship/server-core/internal/items"
 	"sync"
 	"time"
 
@@ -27,7 +27,7 @@ type GameRoom struct {
 	WinnerID  string
 	Mutex     sync.Mutex
 	CreatedAt time.Time
-	Items map[items.ItemID] *items.Item // хранит артефакты доступные в игре
+	// Items map[items.ItemID] *items.Item // хранит артефакты доступные в игре
 }
 
 var Rooms sync.Map

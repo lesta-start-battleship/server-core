@@ -1,8 +1,8 @@
 package event
 
 import (
-	"lesta-battleship/server-core/internal/game-core/config"
-	"lesta-battleship/server-core/internal/game-core/infra/kafka"
+	"github.com/lesta-battleship/server-core/internal/config"
+	"github.com/lesta-battleship/server-core/internal/infra/kafka"
 )
 
 type MatchEventPublisher interface {

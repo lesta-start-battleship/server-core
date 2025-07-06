@@ -2,12 +2,13 @@ package handlers
 
 import (
 	"errors"
-	"lesta-battleship/server-core/internal/game-core/event"
-	"lesta-battleship/server-core/internal/game-core/game"
-	"lesta-battleship/server-core/internal/game-core/match"
-	"lesta-battleship/server-core/internal/game-core/transaction"
 	"log"
 	"time"
+
+	"github.com/lesta-battleship/server-core/internal/event"
+	"github.com/lesta-battleship/server-core/internal/game"
+	"github.com/lesta-battleship/server-core/internal/match"
+	"github.com/lesta-battleship/server-core/internal/transaction"
 
 	"github.com/gorilla/websocket"
 )

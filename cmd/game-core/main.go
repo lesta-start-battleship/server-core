@@ -1,10 +1,10 @@
 package main
 
 import (
-	"lesta-battleship/server-core/internal/game-core/api"
-	"lesta-battleship/server-core/internal/game-core/config"
-	"lesta-battleship/server-core/internal/game-core/event"
-	"lesta-battleship/server-core/internal/game-core/infra/kafka"
+	"github.com/lesta-battleship/server-core/internal/api"
+	"github.com/lesta-battleship/server-core/internal/config"
+	"github.com/lesta-battleship/server-core/internal/event"
+	"github.com/lesta-battleship/server-core/internal/infra/kafka"
 	"log"
 
 	"github.com/gin-gonic/gin"

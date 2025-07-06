@@ -1,8 +1,7 @@
 package transaction
 
 import (
-	"lesta-battleship/server-core/internal/game-core/game"
-	// "lesta-battleship/server-core/internal/match"
+	"github.com/lesta-battleship/server-core/internal/game"
 )
 
 type Command interface {

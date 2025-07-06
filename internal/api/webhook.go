@@ -1,12 +1,13 @@
 package api
 
 import (
-	"lesta-battleship/server-core/internal/game-core/game"
-	"lesta-battleship/server-core/internal/game-core/items"
-	"lesta-battleship/server-core/internal/game-core/match"
 	"log"
 	"net/http"
 	"time"
+
+	"github.com/lesta-battleship/server-core/internal/game"
+	"github.com/lesta-battleship/server-core/internal/items"
+	"github.com/lesta-battleship/server-core/internal/match"
 
 	"github.com/gin-gonic/gin"
 )

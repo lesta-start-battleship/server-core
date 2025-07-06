@@ -1,8 +1,8 @@
 package api
 
 import (
-	"lesta-battleship/server-core/internal/game-core/event"
-	"lesta-battleship/server-core/internal/game-core/ws"
+	"github.com/lesta-battleship/server-core/internal/event"
+	"github.com/lesta-battleship/server-core/internal/ws"
 
 	"github.com/gin-gonic/gin"
 )
