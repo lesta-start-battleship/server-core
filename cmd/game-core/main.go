@@ -1,13 +1,15 @@
 package main
 
 import (
+	"log"
+
 	"github.com/lesta-battleship/server-core/internal/api"
 	"github.com/lesta-battleship/server-core/internal/config"
 	"github.com/lesta-battleship/server-core/internal/event"
 	"github.com/lesta-battleship/server-core/internal/infra/kafka"
-	"log"
 
 	"github.com/gin-gonic/gin"
+	ginprometheus "github.com/zsais/go-gin-prometheus"
 )
 
 func main() {
@@ -23,6 +25,9 @@ func main() {
 	gin.SetMode(gin.ReleaseMode)
 
 	router := gin.Default()
+
+	prometheus := ginprometheus.NewPrometheus("game_core")
+	prometheus.Use(router)
 
 	api.SetupRoutes(router, dispatcher)
 
