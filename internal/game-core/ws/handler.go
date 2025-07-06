@@ -68,13 +68,13 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 		switch input.Event {
 		case "place_ship":
 			if err := handlers.HandlePlaceShip(room, player, conn, input); err != nil {
-				log.Printf("[WS] PlaceShip error: %v", err)
+				log.Printf("[WS] Place ship error: %v", err)
 				continue
 			}
 
 		case "remove_ship":
 			if err := handlers.HandleRemoveShip(room, player, conn, input); err != nil {
-				log.Printf("[WS] RemoveShip error: %v", err)
+				log.Printf("[WS] Remove ship error: %v", err)
 				continue
 			}
 
@@ -92,19 +92,7 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 
 		case "use_item":
 			if err := handlers.HandleItem(room, player, conn, input, dispatcher); err != nil {
-				log.Printf("[WS] UseItem error: %v", err)
-				continue
-			}
-
-		case "heal_ship": // TODO: прямого доступа снаружи к данной функциональности быть не должно
-			if err := handlers.HandleHealShip(room, player, conn, input); err != nil {
-				log.Printf("[WS] HealShip error: %v", err)
-				continue
-			}
-
-		case "open_cell": // TODO: прямого доступа снаружи к данной функциональности быть не должно
-			if err := handlers.HandleOpenCell(room, player, conn, input); err != nil {
-				log.Printf("[WS] OpenCell error: %v", err)
+				log.Printf("[WS] Use item error: %v", err)
 				continue
 			}
 
