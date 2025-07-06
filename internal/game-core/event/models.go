@@ -18,5 +18,5 @@ type Experience struct {
 
 type Item struct {
 	PlayerID string `json:"player_id"`
-	ItemID   string `json:"item_id"`
+	ItemID   int    `json:"item_id"`
 }

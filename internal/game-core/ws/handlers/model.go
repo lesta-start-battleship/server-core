@@ -1,6 +1,9 @@
 package handlers
 
-import "lesta-battleship/server-core/internal/game-core/game"
+import (
+	"lesta-battleship/server-core/internal/game-core/game"
+	"lesta-battleship/server-core/internal/game-core/items"
+)
 
 const (
 	// success для ручек
@@ -58,4 +61,10 @@ type GameStartResponse struct {
 
 type GameEndResponse struct {
 	Winner string `json:"winner"`
+}
+
+type ItemUsedResponse struct {
+	Coords []game.Coord `json:"coords"`
+	ItemID items.ItemID `json:"item_id"`
+	By     string       `json:"by"`
 }
