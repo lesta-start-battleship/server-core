@@ -1,13 +1,13 @@
 package game
 
 const (
-	Empty int = 0
-	Open int = 1
-	Close int = 2
-	Vertical bool = true
+	Empty      int  = 0
+	Open       int  = 1
+	Close      int  = 2
+	Vertical   bool = true
 	Horizontal bool = false
-	Hit bool = true
-	Whole bool = false
+	Hit        bool = true
+	Whole      bool = false
 )
 
 type Coord struct {
@@ -16,34 +16,31 @@ type Coord struct {
 }
 
 type Ship struct {
-	ID     int   `json:"id"`
+	ID int `json:"id"`
 	// Type   ShipType `json:"type"`
-	Len  int `json:"len"`
-	Coords Coord `json:"coords"`
-	Bearings bool `json:"bearings"` // ориентация 
-	Health int `json:"health"`
-	Decks map[Coord]bool `json:"decks"`
+	Len      int            `json:"len"`
+	Coords   Coord          `json:"coords"`
+	Bearings bool           `json:"bearings"` // ориентация
+	Health   int            `json:"health"`
+	Decks    map[Coord]bool `json:"decks"`
 	// Coords []Coord  `json:"coords"`
 }
 
 type GameState struct {
-	Field     [10][10]CellState
-	Ships     []*Ship
+	Field    [10][10]CellState
+	Ships    []*Ship
 	NumShips int
-	ShotsMade []Coord
-	// shipIDSeq int // <-- Add this line
 }
 
 type States struct {
 	PlayerState *GameState
-	EnemyState *GameState
-} 
-
-type CellState struct {
-	State int `json:"state"`
-	ShipID int `json:"shipid"`
+	EnemyState  *GameState
 }
 
+type CellState struct {
+	State  int `json:"state"`
+	ShipID int `json:"shipid"`
+}
 
 const (
 	Battleship int = 1
