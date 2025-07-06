@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/lesta-battleship/server-core/internal/game"
-	"github.com/lesta-battleship/server-core/internal/items"
+	// "github.com/lesta-battleship/server-core/internal/items"
 )
 
 const (
@@ -63,8 +63,8 @@ type GameEndResponse struct {
 	Winner string `json:"winner"`
 }
 
-type ItemUsedResponse struct {
-	Coords []game.Coord `json:"coords"`
-	ItemID items.ItemID `json:"item_id"`
-	By     string       `json:"by"`
-}
+// type ItemUsedResponse struct {
+// 	Coords []game.Coord `json:"coords"`
+// 	ItemID items.ItemID `json:"item_id"`
+// 	By     string       `json:"by"`
+// }
