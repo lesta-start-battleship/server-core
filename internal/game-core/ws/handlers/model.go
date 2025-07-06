@@ -3,16 +3,18 @@ package handlers
 import "lesta-battleship/server-core/internal/game-core/game"
 
 const (
+	// success
+	EventShipPlaced     = "ship_placed"
+	EventShipRemoved    = "ship_removed"
+	EventReadyConfirmed = "ready_confirmed"
+	EventShootResult    = "shoot_result"
+	EventGameStart      = "game_start"
+	EventGameEnd        = "game_end"
+	// error
 	EventPlaceShipError  = "place_ship_error"
-	EventShipPlaced      = "ship_placed"
-	EventReadyError      = "ready_error"
-	EventReadyConfirmed  = "ready_confirmed"
-	EventGameStart       = "game_start"
 	EventRemoveShipError = "remove_ship_error"
-	EventShipRemoved     = "ship_removed"
+	EventReadyError      = "ready_error"
 	EventShootError      = "shoot_error"
-	EventShootResult     = "shoot_result"
-	EventGameEnd         = "game_end"
 )
 
 type EventInput struct {
