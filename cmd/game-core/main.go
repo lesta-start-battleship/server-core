@@ -26,8 +26,8 @@ func main() {
 
 	api.SetupRoutes(router, dispatcher)
 
+	log.Println("Listening and serving HTTP on:", config.Port)
 	if err := router.Run(":" + config.Port); err != nil {
-		log.Fatal("Failed to run server: ", err)
+		log.Fatal("Failed to run server:", err)
 	}
-	log.Println("Listening and serving HTTP on: ", config.Port)
 }
