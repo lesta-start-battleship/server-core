@@ -20,9 +20,14 @@ func main() {
 	publisher := event.NewKafkaMatchEventPublisher(producer)
 	dispatcher := event.NewMatchEventDispatcher(publisher)
 
+	gin.SetMode(gin.ReleaseMode)
+
 	router := gin.Default()
 
 	api.SetupRoutes(router, dispatcher)
 
-	router.Run(":" + config.Port)
+	if err := router.Run(":" + config.Port); err != nil {
+		log.Fatal("Failed to run server: ", err)
+	}
+	log.Println("Listening and serving HTTP on: ", config.Port)
 }
