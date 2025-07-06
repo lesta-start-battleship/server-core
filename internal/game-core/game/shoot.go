@@ -27,6 +27,9 @@ func (c *ShootCommand) Apply(states *States) error {
 		if ship.Decks[c.Target] == Whole {
 			ship.Decks[c.Target] = Hit
 			ship.Health -= 1
+			if ship.Health == 0 {
+     			gs.NumShips -= 1
+    		}
 			c.Success = true
 		}
 	} 
@@ -40,6 +43,9 @@ func (c *ShootCommand) Undo(states *States) {
 	if c.Success {
 		ship := gs.Ships[c.PrevState.ShipID]
 		ship.Decks[c.Target] = Whole
+		if ship.Health == 0 {
+     		gs.NumShips += 1
+    	}
 		ship.Health += 1
 	}
 	gs.Field[c.Target.X][c.Target.Y].State = c.PrevState.State

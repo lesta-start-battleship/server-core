@@ -2,7 +2,9 @@ package api
 
 import (
 	"lesta-battleship/server-core/internal/game-core/game"
+	"lesta-battleship/server-core/internal/game-core/items"
 	"lesta-battleship/server-core/internal/game-core/match"
+	"log"
 	"net/http"
 	"time"
 
@@ -20,7 +22,11 @@ func StartMatch(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	items, err := items.GetItemsInfo(payload.Player1, payload.Player2)
+	if err != nil {
+		log.Printf("пизда рулям")
+	}
+	
 	player1State := game.NewGameState()
 	player2State := game.NewGameState()
 
@@ -33,6 +39,7 @@ func StartMatch(c *gin.Context) {
 				PlayerState: player1State,
 				EnemyState:  player2State,
 			},
+			Items: items.ItemsPlayer1,
 		},
 		Player2: &match.PlayerConn{
 			ID: payload.Player2,
@@ -40,9 +47,11 @@ func StartMatch(c *gin.Context) {
 				PlayerState: player2State,
 				EnemyState:  player1State,
 			},
+			Items: items.ItemsPlayer2,
 		},
 		Status:    "waiting",
 		CreatedAt: time.Now(),
+		Items: items.Items,
 	}
 
 	match.Rooms.Store(payload.RoomID, room)
