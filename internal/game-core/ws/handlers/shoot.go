@@ -20,18 +20,18 @@ func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.
 
 	if room.Status != "playing" {
 		err := errors.New("game not started")
-		Send(conn, "shoot_error", err.Error())
+		Send(conn, EventShootError, err.Error())
 		return err
 	}
 	if room.Turn != player.ID {
 		err := errors.New("not your turn")
-		Send(conn, "shoot_error", err.Error())
+		Send(conn, EventShootError, err.Error())
 		return err
 	}
 
 	if input.X < 0 || input.X >= 10 || input.Y < 0 || input.Y >= 10 {
 		err := errors.New("coordinates out of bounds")
-		Send(conn, "shoot_error", err.Error())
+		Send(conn, EventShootError, err.Error())
 		return err
 	}
 
@@ -45,7 +45,7 @@ func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.
 	targetCell := target.States.PlayerState.Field[input.X][input.Y]
 	if targetCell.State == game.Open {
 		err := errors.New("you already shot at this cell")
-		Send(conn, "shoot_error", err.Error())
+		Send(conn, EventShootError, err.Error())
 		return err
 	}
 
@@ -55,7 +55,7 @@ func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.
 
 	if err := tx.Execute(player.States); err != nil {
 		log.Println("[SHOOT] Error:", err)
-		Send(conn, "shoot_error", err.Error())
+		Send(conn, EventShootError, err.Error())
 		return err
 	}
 
@@ -75,7 +75,7 @@ func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.
 		}
 	}
 
-	Broadcast(room, "shoot_result", ShootResultResponse{
+	Broadcast(room, EventShootResult, ShootResultResponse{
 		X:        input.X,
 		Y:        input.Y,
 		By:       player.ID,
@@ -113,7 +113,7 @@ func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.
 			log.Printf("[KAFKA] Failed to dispatch match result: %v", err)
 		}
 
-		Broadcast(room, "game_end", GameEndResponse{
+		Broadcast(room, EventGameEnd, GameEndResponse{
 			Winner: player.ID,
 		})
 

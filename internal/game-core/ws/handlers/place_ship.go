@@ -15,19 +15,19 @@ func HandlePlaceShip(room *match.GameRoom, player *match.PlayerConn, conn *webso
 
 	if room.Status != "waiting" {
 		err := errors.New("game already started")
-		Send(conn, "place_ship_error", err.Error())
+		Send(conn, EventPlaceShipError, err.Error())
 		return err
 	}
 
 	if player.Ready {
 		err := errors.New("cannot place ship after ready")
-		Send(conn, "place_ship_error", err.Error())
+		Send(conn, EventPlaceShipError, err.Error())
 		return err
 	}
 
 	if player.States.PlayerState.NumShips >= 10 {
 		err := errors.New("maximum 10 ships allowed")
-		Send(conn, "place_ship_error", err.Error())
+		Send(conn, EventPlaceShipError, err.Error())
 		return err
 	}
 
@@ -36,11 +36,11 @@ func HandlePlaceShip(room *match.GameRoom, player *match.PlayerConn, conn *webso
 	tx.Add(cmd)
 
 	if err := tx.Execute(player.States); err != nil {
-		Send(conn, "place_ship_error", err.Error())
+		Send(conn, EventPlaceShipError, err.Error())
 		return err
 	}
 
-	Send(conn, "ship_placed", ShipPlacedResponse{
+	Send(conn, EventShipPlaced, ShipPlacedResponse{
 		Coords: cmd.GetDeckCoords(),
 	})
 

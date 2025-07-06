@@ -13,7 +13,7 @@ func HandleReady(room *match.GameRoom, player *match.PlayerConn, conn *websocket
 
 	if player.States.PlayerState.NumShips < 10 {
 		err := errors.New("you must place 10 ships before ready")
-		Send(conn, "ready_error", err.Error())
+		Send(conn, EventReadyError, err.Error())
 		return err
 	}
 
@@ -27,12 +27,12 @@ func HandleReady(room *match.GameRoom, player *match.PlayerConn, conn *websocket
 		shouldStart = true
 	}
 
-	Send(conn, "ready_confirmed", ReadyConfirmedResponse{
+	Send(conn, EventReadyConfirmed, ReadyConfirmedResponse{
 		AllReady: allReady,
 	})
 
 	if shouldStart {
-		Broadcast(room, "game_start", GameStartResponse{
+		Broadcast(room, EventGameStart, GameStartResponse{
 			FirstTurn: room.Turn,
 		})
 	}
