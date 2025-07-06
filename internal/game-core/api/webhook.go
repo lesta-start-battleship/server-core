@@ -18,15 +18,16 @@ func StartMatch(c *gin.Context) {
 		Player2 string `json:"player2"`
 		Mode    string `json:"mode"`
 	}
+
 	if err := c.ShouldBindJSON(&payload); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-	items, err := items.GetItemsInfo(payload.Player1, payload.Player2)
-	if err != nil {
+
+	if items, err := items.GetItemsInfo(payload.Player1, payload.Player2); err != nil {
 		log.Printf("пизда рулям")
 	}
-	
+
 	player1State := game.NewGameState()
 	player2State := game.NewGameState()
 
@@ -51,7 +52,7 @@ func StartMatch(c *gin.Context) {
 		},
 		Status:    "waiting",
 		CreatedAt: time.Now(),
-		Items: items.Items,
+		Items:     items.Items,
 	}
 
 	match.Rooms.Store(payload.RoomID, room)
