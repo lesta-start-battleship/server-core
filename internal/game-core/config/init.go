@@ -9,6 +9,7 @@ import (
 )
 
 var (
+	Port         string
 	KafkaBrokers []string
 	TopicsToSend []string
 	MatchResults string
@@ -19,6 +20,11 @@ func init() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Println("No .env file found, using system environment variables")
+	}
+
+	Port = os.Getenv("GAME_CORE_PORT")
+	if Port == "" {
+		log.Fatal("Game core port not set")
 	}
 
 	kafkaBrokers := os.Getenv("KAFKA_BROKERS")

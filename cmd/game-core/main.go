@@ -24,5 +24,5 @@ func main() {
 
 	api.SetupRoutes(router, dispatcher)
 
-	router.Run(":8080")
+	router.Run(":" + config.Port)
 }
