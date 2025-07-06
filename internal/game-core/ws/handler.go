@@ -3,7 +3,6 @@ package ws
 import (
 	"encoding/json"
 	"lesta-battleship/server-core/internal/game-core/event"
-	"lesta-battleship/server-core/internal/game-core/game"
 	"lesta-battleship/server-core/internal/game-core/match"
 	"lesta-battleship/server-core/internal/game-core/ws/handlers"
 
@@ -58,13 +57,7 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 			break
 		}
 
-		var input struct {
-			Event string    `json:"event"`
-			Ship  game.Ship `json:"ship"`
-			X     int       `json:"x"`
-			Y     int       `json:"y"`
-			ItemID int 		`json:"itemid"`
-		}
+		var input handlers.WSInput
 		if err = json.Unmarshal(msg, &input); err != nil {
 			log.Println("[WS] JSON unmarshal error:", err)
 			continue
@@ -114,7 +107,7 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 				log.Printf("[WS] UseItem error: %v", err)
 				continue
 			}
-			
+
 		default:
 			handlers.Send(conn, "error", "unknown event")
 		}
