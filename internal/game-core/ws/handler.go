@@ -79,7 +79,7 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 			}
 
 		case "ready":
-			if err := handlers.HandleReady(room, player, conn, input); err != nil {
+			if err := handlers.HandleReady(room, player, conn); err != nil {
 				log.Printf("[WS] Ready error: %v", err)
 				continue
 			}
