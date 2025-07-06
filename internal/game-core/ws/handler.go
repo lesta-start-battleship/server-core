@@ -109,9 +109,9 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 				continue
 			}
 
-		case "item":
-			if err := handlers.HandleItem(room, player, conn, input); err != nil {
-				log.Printf("[WS] Item error: %v", err)
+		case "use_item":
+			if err := handlers.HandleItem(room, player, conn, input, dispatcher); err != nil {
+				log.Printf("[WS] UseItem error: %v", err)
 				continue
 			}
 			
