@@ -6,6 +6,7 @@ type MatchResult struct {
 	WinnerID   string      `json:"winner_id"`
 	LoserID    string      `json:"loser_id"`
 	MatchID    string      `json:"match_id"`
+	WarID      string      `json:"guild_war_id,omitempty"`
 	MatchDate  time.Time   `json:"match_date"`
 	MatchType  string      `json:"match_type"`
 	Experience *Experience `json:"experience,omitempty"`
