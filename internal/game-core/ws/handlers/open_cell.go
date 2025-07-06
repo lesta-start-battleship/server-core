@@ -15,26 +15,26 @@ func HandleOpenCell(room *match.GameRoom, player *match.PlayerConn, conn *websoc
 
 	if room.Status != "playing" {
 		err := errors.New("game not started")
-		Send(conn, "open_cell_error", err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 
 	if room.Turn != player.ID {
 		err := errors.New("not your turn")
-		Send(conn, "open_cell_error", err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 
 	if input.X < 0 || input.X >= 10 || input.Y < 0 || input.Y >= 10 {
 		err := errors.New("coordinates out of bounds")
-		Send(conn, "open_cell_error", err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 
 	cell := player.States.EnemyState.Field[input.X][input.Y]
 	if cell.State == game.Open {
 		err := errors.New("this cell is already opened")
-		Send(conn, "open_cell_error", err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 
@@ -43,7 +43,7 @@ func HandleOpenCell(room *match.GameRoom, player *match.PlayerConn, conn *websoc
 	tx.Add(cmd)
 
 	if err := tx.Execute(player.States); err != nil {
-		Send(conn, "open_cell_error", err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 

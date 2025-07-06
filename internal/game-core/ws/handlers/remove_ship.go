@@ -15,13 +15,13 @@ func HandleRemoveShip(room *match.GameRoom, player *match.PlayerConn, conn *webs
 
 	if room.Status != "waiting" {
 		err := errors.New("cannot remove ship during game")
-		Send(conn, EventRemoveShipError, err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 
 	if player.Ready {
 		err := errors.New("you cannot remove ship after ready")
-		Send(conn, EventRemoveShipError, err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 
@@ -30,11 +30,11 @@ func HandleRemoveShip(room *match.GameRoom, player *match.PlayerConn, conn *webs
 	tx.Add(cmd)
 
 	if err := tx.Execute(player.States); err != nil {
-		Send(conn, EventRemoveShipError, err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 
-	Send(conn, EventShipRemoved, ShipRemovedResponse{
+	SendSuccess(conn, EventShipRemoved, ShipRemovedResponse{
 		Coords: cmd.GetDeckCoords(),
 	})
 

@@ -15,13 +15,13 @@ func HandleHealShip(room *match.GameRoom, player *match.PlayerConn, conn *websoc
 
 	if room.Status != "playing" {
 		err := errors.New("game not started")
-		Send(conn, "heal_ship_error", err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 
 	if room.Turn != player.ID {
 		err := errors.New("not your turn")
-		Send(conn, "heal_ship_error", err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 
@@ -30,11 +30,11 @@ func HandleHealShip(room *match.GameRoom, player *match.PlayerConn, conn *websoc
 	tx.Add(cmd)
 
 	if err := tx.Execute(player.States); err != nil {
-		Send(conn, "heal_ship_error", err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 
-	Send(conn, "ship_healed", map[string]any{
+	SendSuccess(conn, "ship_healed", map[string]any{
 		"coords": cmd.GetHealedCoord(),
 	})
 	return nil

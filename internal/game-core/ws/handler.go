@@ -90,6 +90,12 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 				continue
 			}
 
+		case "use_item":
+			if err := handlers.HandleItem(room, player, conn, input, dispatcher); err != nil {
+				log.Printf("[WS] UseItem error: %v", err)
+				continue
+			}
+
 		case "heal_ship": // TODO: прямого доступа снаружи к данной функциональности быть не должно
 			if err := handlers.HandleHealShip(room, player, conn, input); err != nil {
 				log.Printf("[WS] HealShip error: %v", err)
@@ -102,14 +108,8 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 				continue
 			}
 
-		case "use_item":
-			if err := handlers.HandleItem(room, player, conn, input, dispatcher); err != nil {
-				log.Printf("[WS] UseItem error: %v", err)
-				continue
-			}
-
 		default:
-			handlers.Send(conn, "error", "unknown event")
+			handlers.SendError(conn, "unknown event")
 		}
 	}
 }

@@ -15,19 +15,19 @@ func HandleItem(room *match.GameRoom, player *match.PlayerConn, conn *websocket.
 
 	if room.Status != "playing" {
 		err := errors.New("game not started")
-		Send(conn, "use_item_error", err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 
 	if room.Turn != player.ID {
 		err := errors.New("not your turn")
-		Send(conn, "use_item_error", err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 
 	if player.Items[items.ItemID(input.ItemID)] == 0 {
 		err := errors.New("the user does not have this item")
-		Send(conn, "use_item_error", err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 	// TODO: можем ли использовать данных предмет(ограничения на применения в 1 игре/ограничения на применения несколько ходов подряд)
@@ -37,13 +37,13 @@ func HandleItem(room *match.GameRoom, player *match.PlayerConn, conn *websocket.
 
 	_, err := items.UseItem(items.ItemID(input.ItemID), player.States, room.Items, params)
 	if err != nil {
-		Send(conn, "use_item_error", err.Error())
+		SendError(conn, err.Error())
 		return err
 	}
 
 	// TODO: сообщить об использовании предмета
 
-	Send(conn, "item_used", map[string]any{
+	SendSuccess(conn, EventItemUsed, map[string]any{
 		// "coords": cmd.GetHealedCoord(),
 	}) // TODO: придумать как в общем виде выдавать результат исполнения командд
 	return nil

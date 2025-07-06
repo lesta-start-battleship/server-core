@@ -8,13 +8,23 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func Send(conn *websocket.Conn, event string, data any) {
+func SendSuccess(conn *websocket.Conn, event string, data any) {
 	resp := WSResponse{
 		Event: event,
 		Data:  data,
 	}
 	if err := conn.WriteJSON(resp); err != nil {
-		log.Println("[WS] Send failed:", err)
+		log.Println("[WS] Send success failed:", err)
+	}
+}
+
+func SendError(conn *websocket.Conn, message string) {
+	resp := WSResponse{
+		Event: EventError,
+		Data:  message,
+	}
+	if err := conn.WriteJSON(resp); err != nil {
+		log.Println("[WS] Send error failed:", err)
 	}
 }
 
