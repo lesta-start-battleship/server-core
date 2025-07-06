@@ -27,10 +27,14 @@ func HandleReady(room *match.GameRoom, player *match.PlayerConn, conn *websocket
 		shouldStart = true
 	}
 
-	Send(conn, "ready_confirmed", map[string]any{"all_ready": allReady})
+	Send(conn, "ready_confirmed", ReadyConfirmedResponse{
+		AllReady: allReady,
+	})
 
 	if shouldStart {
-		Broadcast(room, "game_start", map[string]any{"first_turn": room.Turn})
+		Broadcast(room, "game_start", GameStartResponse{
+			FirstTurn: room.Turn,
+		})
 	}
 
 	return nil

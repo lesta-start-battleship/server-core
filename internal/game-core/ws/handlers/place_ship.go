@@ -40,8 +40,8 @@ func HandlePlaceShip(room *match.GameRoom, player *match.PlayerConn, conn *webso
 		return err
 	}
 
-	Send(conn, "ship_placed", map[string]any{
-		"coords": cmd.GetDeckCoords(),
+	Send(conn, "ship_placed", ShipPlacedResponse{
+		Coords: cmd.GetDeckCoords(),
 	})
 
 	return nil

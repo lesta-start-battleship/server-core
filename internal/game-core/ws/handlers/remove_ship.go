@@ -34,8 +34,8 @@ func HandleRemoveShip(room *match.GameRoom, player *match.PlayerConn, conn *webs
 		return err
 	}
 
-	Send(conn, "ship_removed", map[string]any{
-		"coords": cmd.GetDeckCoords(),
+	Send(conn, "ship_removed", ShipRemovedResponse{
+		Coords: cmd.GetDeckCoords(),
 	})
 
 	return nil

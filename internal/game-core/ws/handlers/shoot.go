@@ -75,13 +75,13 @@ func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.
 		}
 	}
 
-	Broadcast(room, "shoot_result", map[string]any{
-		"x":         input.X,
-		"y":         input.Y,
-		"by":        player.ID,
-		"hit":       cmd.Success,
-		"next_turn": target.ID,
-		"game_over": gameOver,
+	Broadcast(room, "shoot_result", ShootResultResponse{
+		X:        input.X,
+		Y:        input.Y,
+		By:       player.ID,
+		Hit:      cmd.Success,
+		NextTurn: target.ID,
+		GameOver: gameOver,
 	})
 
 	if gameOver {
@@ -101,7 +101,7 @@ func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.
 			WinnerID:  winnerID,
 			LoserID:   loserID,
 			MatchID:   room.RoomID,
-			MatchDate: time.Now().UTC(),
+			MatchDate: time.Now(),
 			MatchType: room.Mode,
 			Experience: &event.Experience{
 				WinnerGain: 30,
@@ -113,7 +113,10 @@ func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.
 			log.Printf("[KAFKA] Failed to dispatch match result: %v", err)
 		}
 
-		Broadcast(room, "game_end", map[string]any{"winner": player.ID})
+		Broadcast(room, "game_end", GameEndResponse{
+			Winner: player.ID,
+		})
+
 		if room.Player1.Conn != nil {
 			_ = room.Player1.Conn.Close()
 		}
