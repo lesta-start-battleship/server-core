@@ -17,17 +17,17 @@ const (
 	EventShootError      = "shoot_error"
 )
 
-type WSResponse struct {
-	Event string `json:"event"`
-	Data  any    `json:"data"`
-}
-
-type EventInput struct {
+type WSInput struct {
 	Event  string    `json:"event"`
 	Ship   game.Ship `json:"ship"`
 	X      int       `json:"x"`
 	Y      int       `json:"y"`
 	ItemID int       `json:"itemid"`
+}
+
+type WSResponse struct {
+	Event string `json:"event"`
+	Data  any    `json:"data"`
 }
 
 type ShipPlacedResponse struct {

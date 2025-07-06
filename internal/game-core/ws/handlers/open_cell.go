@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func HandleOpenCell(room *match.GameRoom, player *match.PlayerConn, conn *websocket.Conn, input EventInput) error {
+func HandleOpenCell(room *match.GameRoom, player *match.PlayerConn, conn *websocket.Conn, input WSInput) error {
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 

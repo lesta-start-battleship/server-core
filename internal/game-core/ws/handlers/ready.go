@@ -7,7 +7,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func HandleReady(room *match.GameRoom, player *match.PlayerConn, conn *websocket.Conn, _ EventInput) error {
+func HandleReady(room *match.GameRoom, player *match.PlayerConn, conn *websocket.Conn, _ WSInput) error {
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 

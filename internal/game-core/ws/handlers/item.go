@@ -9,7 +9,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func HandleItem(room *match.GameRoom, player *match.PlayerConn, conn *websocket.Conn, input EventInput, dispatcher *event.MatchEventDispatcher) error {
+func HandleItem(room *match.GameRoom, player *match.PlayerConn, conn *websocket.Conn, input WSInput, dispatcher *event.MatchEventDispatcher) error {
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 

@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.Conn, input EventInput, dispatcher *event.MatchEventDispatcher) error {
+func HandleFire(room *match.GameRoom, player *match.PlayerConn, conn *websocket.Conn, input WSInput, dispatcher *event.MatchEventDispatcher) error {
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 
