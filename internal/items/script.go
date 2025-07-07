@@ -7,7 +7,6 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/lesta-battleship/server-core/internal/game"
 	"github.com/lesta-battleship/server-core/internal/transaction"
@@ -266,10 +265,10 @@ func resolveInt(val interface{}, params map[string]any) (int, bool) {
 	}
 	if m, ok := val.(map[string]interface{}); ok {
 		if name, ok := m["Name"]; ok && name == "RAND" {
-			rand.Seed(time.Now().UnixNano())
 			return rand.Intn(10), true // 0..9
 		}
 	}
+
 	if arr, ok := val.([]interface{}); ok && len(arr) > 0 {
 		return resolveInt(arr[0], params)
 	}
@@ -417,11 +416,11 @@ func resolveIntWithRand(val interface{}, params map[string]any, lastRand *int) (
 	}
 	if m, ok := val.(map[string]interface{}); ok {
 		if name, ok := m["Name"]; ok && name == "RAND" {
-			rand.Seed(time.Now().UnixNano())
 			*lastRand = rand.Intn(10)
 			return *lastRand, true
 		}
 	}
+
 	if arr, ok := val.([]interface{}); ok && len(arr) > 0 {
 		return resolveIntWithRand(arr[0], params, lastRand)
 	}
