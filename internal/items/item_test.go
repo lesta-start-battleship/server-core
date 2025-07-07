@@ -31,7 +31,7 @@ func TestRunScript_REMOVE_SHIP(t *testing.T) {
 		Coords:   game.Coord{X: 2, Y: 3},
 		Bearings: game.Vertical,
 		Health:   1,
-		Decks:    map[game.Coord]bool{game.Coord{X: 2, Y: 3}: game.Whole},
+		Decks: map[game.Coord]bool{{X: 2, Y: 3}: game.Whole},
 	}
 	gs.Ships[1] = ship
 	gs.Field[2][3] = game.CellState{State: 2, ShipID: 1}
@@ -73,7 +73,7 @@ func TestRunScript_HEAL_SHIP(t *testing.T) {
 		Coords:   game.Coord{X: 5, Y: 5},
 		Bearings: game.Vertical,
 		Health:   1,
-		Decks:    map[game.Coord]bool{game.Coord{X: 5, Y: 5}: game.Hit},
+		Decks:    map[game.Coord]bool{{X: 5, Y: 5}: game.Hit},
 	}
 	gs.Ships[2] = ship
 	gs.Field[5][5] = game.CellState{State: 1, ShipID: 2}
