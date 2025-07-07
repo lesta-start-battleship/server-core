@@ -1,73 +1,68 @@
 package handlers
 
 import (
-	"errors"
 	"log"
 
-	"github.com/gorilla/websocket"
 	"github.com/lesta-battleship/server-core/internal/event"
 	"github.com/lesta-battleship/server-core/internal/items"
-	"github.com/lesta-battleship/server-core/internal/match"
+	"github.com/lesta-battleship/server-core/internal/wsiface"
 )
 
-func HandleUseItem(room *match.GameRoom, player *match.PlayerConn, conn *websocket.Conn, input WSInput, dispatcher *event.MatchEventDispatcher) error {
-	room.Mutex.Lock()
-	defer room.Mutex.Unlock()
+type UseItemHandler struct{}
 
-	if room.Status != "playing" {
-		err := errors.New("game not started")
-		SendError(conn, err.Error())
-		return err
+func (h *UseItemHandler) EventName() string {
+	return "use_item"
+}
+
+func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
+	ctx.Room.Mutex.Lock()
+	defer ctx.Room.Mutex.Unlock()
+
+	wsInput, ok := input.(wsiface.WSInput)
+	if !ok {
+		return SendError(ctx.Conn, "invalid input format for use_item")
 	}
 
-	if room.Turn != player.ID {
-		err := errors.New("not your turn")
-		SendError(conn, err.Error())
-		return err
+	if ctx.Room.Status != "playing" {
+		return SendError(ctx.Conn, "game not started")
 	}
 
-	// проверим доступность предмета
-	if player.Items[items.ItemID(input.ItemID)] <= 0 {
-		err := errors.New("item not available or already used")
-		SendError(conn, err.Error())
-		return err
+	if ctx.Room.Turn != ctx.Player.ID {
+		return SendError(ctx.Conn, "not your turn")
 	}
 
+	itemID := items.ItemID(wsInput.ItemID)
+	if ctx.Player.Items[itemID] <= 0 {
+		return SendError(ctx.Conn, "item not available or already used")
+	}
 	log.Println("item dostupen")
 
-	// найдём сам предмет из общей коллекции
-	itemData, ok := room.Items[items.ItemID(input.ItemID)]
+	itemData, ok := ctx.Room.Items[itemID]
 	if !ok {
-		err := errors.New("item metadata not found")
-		SendError(conn, err.Error())
-		return err
+		return SendError(ctx.Conn, "item metadata not found")
 	}
 	log.Println("nashli iz obshey kollekcii")
 
-	result, err := items.UseItem(items.ItemID(input.ItemID), player.States, room.Items, input.Params)
+	result, err := items.UseItem(itemID, ctx.Player.States, ctx.Room.Items, wsInput.Params)
 	if err != nil {
 		log.Printf("[WS] Use item error: %v", err)
-		SendError(conn, err.Error())
-		return err
+		return SendError(ctx.Conn, err.Error())
 	}
 	log.Println("usenuli item")
 
-	player.Items[items.ItemID(input.ItemID)]--
+	ctx.Player.Items[itemID]--
 
-	usedItem := event.Item{
-		PlayerID: player.ID,
-		ItemID:   input.ItemID,
-	}
-	if err := dispatcher.DispatchUsedItem(usedItem); err != nil {
+	if err := ctx.Dispatcher.DispatchUsedItem(event.Item{
+		PlayerID: ctx.Player.ID,
+		ItemID:   wsInput.ItemID,
+	}); err != nil {
 		log.Printf("[KAFKA] Failed to dispatch used item: %v", err)
 	}
 
-	Broadcast(room, EventItemUsed, ItemUsedResponse{
-		ItemID: items.ItemID(input.ItemID),
+	return Broadcast(ctx.Room, wsiface.EventItemUsed, wsiface.ItemUsedResponse{
+		ItemID: itemID,
 		Name:   itemData.Name,
-		By:     player.ID,
+		By:     ctx.Player.ID,
 		Result: result,
 	})
-
-	return nil
 }

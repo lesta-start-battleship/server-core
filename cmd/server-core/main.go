@@ -7,6 +7,7 @@ import (
 	"github.com/lesta-battleship/server-core/internal/config"
 	"github.com/lesta-battleship/server-core/internal/event"
 	"github.com/lesta-battleship/server-core/internal/infra/kafka"
+	"github.com/lesta-battleship/server-core/internal/ws/handlers"
 
 	"github.com/gin-gonic/gin"
 	ginprometheus "github.com/zsais/go-gin-prometheus"
@@ -28,6 +29,8 @@ func main() {
 
 	prometheus := ginprometheus.NewPrometheus("game_core")
 	prometheus.Use(router)
+
+	handlers.RegisterAllHandlers()
 
 	api.SetupRoutes(router, dispatcher)
 

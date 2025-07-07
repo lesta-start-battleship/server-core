@@ -1,4 +1,4 @@
-package handlers
+package wsiface
 
 import (
 	"github.com/lesta-battleship/server-core/internal/game"

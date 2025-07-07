@@ -1,42 +1,45 @@
 package handlers
 
 import (
-	// "errors"
-	"github.com/lesta-battleship/server-core/internal/match"
-
-	"github.com/gorilla/websocket"
+	"github.com/lesta-battleship/server-core/internal/wsiface"
 )
 
-func HandleReady(room *match.GameRoom, player *match.PlayerConn, conn *websocket.Conn) error {
-	room.Mutex.Lock()
-	defer room.Mutex.Unlock()
+type ReadyHandler struct{}
 
-	// TODO: после тестов убрать комменты
+func (h *ReadyHandler) EventName() string {
+	return "ready"
+}
 
-	// if player.States.PlayerState.NumShips < 10 {
-	// 	err := errors.New("you must place 10 ships before ready")
-	// 	SendError(conn, err.Error())
-	// 	return err
+func (h *ReadyHandler) Handle(input any, ctx *wsiface.Context) error {
+	ctx.Room.Mutex.Lock()
+	defer ctx.Room.Mutex.Unlock()
+
+	// if ctx.Player.States.PlayerState.NumShips < 10 {
+	// 	return SendError(ctx.Conn, "you must place 10 ships before ready")
 	// }
 
-	player.Ready = true
-	allReady := room.Player1.Ready && room.Player2.Ready
+	ctx.Player.Ready = true
+	allReady := ctx.Room.Player1.Ready && ctx.Room.Player2.Ready
 	shouldStart := false
 
-	if allReady && room.Status == "waiting" {
-		room.Status = "playing"
-		room.Turn = room.Player1.ID
+	if allReady && ctx.Room.Status == "waiting" {
+		ctx.Room.Status = "playing"
+		ctx.Room.Turn = ctx.Room.Player1.ID
 		shouldStart = true
 	}
 
-	SendSuccess(conn, EventReadyConfirmed, ReadyConfirmedResponse{
+	if err := SendSuccess(ctx.Conn, wsiface.EventReadyConfirmed, wsiface.ReadyConfirmedResponse{
 		AllReady: allReady,
-	})
+	}); err != nil {
+		return err
+	}
 
 	if shouldStart {
-		Broadcast(room, EventGameStart, GameStartResponse{
-			FirstTurn: room.Turn,
-		})
+		if err := Broadcast(ctx.Room, wsiface.EventGameStart, wsiface.GameStartResponse{
+			FirstTurn: ctx.Room.Turn,
+		}); err != nil {
+			return err
+		}
 	}
 
 	return nil
