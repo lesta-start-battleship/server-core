@@ -33,7 +33,7 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 
 	itemID := items.ItemID(wsInput.ItemID)
 	if ctx.Player.Items[itemID] <= 0 {
-		return SendError(ctx.Conn, "item not available or already used")
+		return SendError(ctx.Conn, "item not available")
 	}
 	log.Println("item dostupen")
 
