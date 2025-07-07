@@ -160,7 +160,7 @@ func TestUseItem_Integration(t *testing.T) {
 	t.Logf("Добавлено 2 предмета с itemID=%d", itemID)
 
 	// 4. Получить инвентарь игрока
-	inv, err := GetNumberItems(token)
+	inv, err := GetUserItems(token)
 	if err != nil {
 		t.Fatalf("GetNumberItems error: %v", err)
 	}
@@ -180,7 +180,7 @@ func TestUseItem_Integration(t *testing.T) {
 	t.Logf("UseItem успешно применён к itemID=%d", itemID)
 
 	// 6. Проверить, что количество предмета уменьшилось
-	inv2, err := GetNumberItems(token)
+	inv2, err := GetUserItems(token)
 	if err != nil {
 		t.Fatalf("GetNumberItems error: %v", err)
 	}
@@ -206,7 +206,7 @@ func TestUseItem_NoItemInInventory(t *testing.T) {
 	itemID := ItemID(items[1].ID) // используем второй предмет, который не добавлялся
 
 	// 2. Получить инвентарь игрока
-	inv, err := GetNumberItems(token)
+	inv, err := GetUserItems(token)
 	if err != nil {
 		t.Fatalf("GetNumberItems error: %v", err)
 	}

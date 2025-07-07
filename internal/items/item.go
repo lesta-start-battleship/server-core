@@ -4,8 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"os"
 
+	"github.com/lesta-battleship/server-core/internal/config"
 	"github.com/lesta-battleship/server-core/internal/game"
 )
 
@@ -17,14 +17,6 @@ type Item struct {
 	Description string `json:"description"`
 	Script      string `json:"script"`
 	ID          ItemID `json:"id"`
-}
-
-var BaseItemsAPIURL string = "http://37.9.53.107"
-
-func init() {
-	if apiURL := os.Getenv("ITEMS_API_URL"); apiURL != "" {
-		BaseItemsAPIURL = apiURL
-	}
 }
 
 func UseItem(id ItemID, state *game.States, itemsList map[ItemID]*Item, params map[string]any) (string, error) {
@@ -56,7 +48,7 @@ func UseItem(id ItemID, state *game.States, itemsList map[ItemID]*Item, params m
 
 // нам нужен в мааап
 func GetAllItems() (map[ItemID]*Item, error) {
-	resp, err := http.Get(BaseItemsAPIURL + "/items/")
+	resp, err := http.Get(config.InventoryServiceURL + "/items/")
 	if err != nil {
 		return nil, err
 	}
@@ -76,8 +68,8 @@ func GetAllItems() (map[ItemID]*Item, error) {
 	return result, nil
 }
 
-func GetNumberItems(userJWT string) (map[ItemID]int, error) {
-	url := BaseItemsAPIURL + "/inventory/user_inventory"
+func GetUserItems(userJWT string) (map[ItemID]int, error) {
+	url := config.InventoryServiceURL + "/inventory/user_inventory"
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err
