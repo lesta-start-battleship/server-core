@@ -173,7 +173,7 @@ func TestUseItem_Integration(t *testing.T) {
 	state := &game.States{}
 	item := &Item{ID: itemID, Script: "[]"}
 	itemsList := map[ItemID]*Item{itemID: item}
-	_, err = UseItem(itemID, state, itemsList, map[string]interface{}{}, token)
+	_, err = UseItem(itemID, state, itemsList, map[string]interface{}{})
 	if err != nil {
 		t.Fatalf("UseItem error: %v", err)
 	}
@@ -218,7 +218,7 @@ func TestUseItem_NoItemInInventory(t *testing.T) {
 	state := &game.States{}
 	item := &Item{ID: itemID, Script: "[]"}
 	itemsList := map[ItemID]*Item{itemID: item}
-	_, err = UseItem(itemID, state, itemsList, map[string]interface{}{}, token)
+	_, err = UseItem(itemID, state, itemsList, map[string]interface{}{})
 	if err == nil {
 		t.Fatalf("UseItem должен вернуть ошибку, если предмета нет в инвентаре")
 	}

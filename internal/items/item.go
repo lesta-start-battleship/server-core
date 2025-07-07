@@ -1,7 +1,6 @@
 package items
 
 import (
-	"bytes"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -28,20 +27,35 @@ func init() {
 	}
 }
 
-func UseItem(id ItemID, state *game.States, itemsList map[ItemID]*Item, params map[string]interface{}, userJWT string) (string, error) {
+func UseItem(id ItemID, state *game.States, itemsList map[ItemID]*Item, params map[string]any) (string, error) {
 	item, ok := itemsList[id]
 	if !ok {
 		return "", fmt.Errorf("item with id %d not found", id)
 	}
 
-	if err := UseInventoryItem(id, userJWT); err != nil {
-		return "", fmt.Errorf("failed to use item in inventory: %w", err)
-	}
+	// if err := UseInventoryItem(id, userJWT); err != nil {
+	// 	return "", fmt.Errorf("failed to use item in inventory: %w", err)
+	// }
 
 	return RunScript(item.Script, state, params)
 }
 
-func GetAllItems() ([]Item, error) {
+// func GetAllItems() ([]Item, error) {
+// 	resp, err := http.Get(BaseItemsAPIURL + "/items/")
+// 	if err != nil {
+// 		return nil, err
+// 	}
+// 	defer resp.Body.Close()
+
+// 	var items []Item
+// 	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
+// 		return nil, err
+// 	}
+// 	return items, nil
+// }
+
+// нам нужен в мааап
+func GetAllItems() (map[ItemID]*Item, error) {
 	resp, err := http.Get(BaseItemsAPIURL + "/items/")
 	if err != nil {
 		return nil, err
@@ -52,7 +66,14 @@ func GetAllItems() ([]Item, error) {
 	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
 		return nil, err
 	}
-	return items, nil
+
+	result := make(map[ItemID]*Item)
+	for i := range items {
+		item := &items[i]
+		result[item.ID] = item
+	}
+
+	return result, nil
 }
 
 func GetNumberItems(userJWT string) (map[ItemID]int, error) {
@@ -93,26 +114,26 @@ func GetNumberItems(userJWT string) (map[ItemID]int, error) {
 	return result, nil
 }
 
-func UseInventoryItem(itemID ItemID, userJWT string) error {
-	url := BaseItemsAPIURL + "/inventory/use_item"
-	payload := map[string]interface{}{"item_id": int(itemID), "amount": 1}
+// func UseInventoryItem(itemID ItemID, userJWT string) error {
+// 	url := BaseItemsAPIURL + "/inventory/use_item"
+// 	payload := map[string]interface{}{"item_id": int(itemID), "amount": 1}
 
-	body, _ := json.Marshal(payload)
-	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))
-	if err != nil {
-		return err
-	}
+// 	body, _ := json.Marshal(payload)
+// 	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))
+// 	if err != nil {
+// 		return err
+// 	}
 
-	req.Header.Set("Authorization", "Bearer "+userJWT)
-	req.Header.Set("Content-Type", "application/json")
-	resp, err := http.DefaultClient.Do(req)
-	if err != nil {
-		return err
-	}
-	defer resp.Body.Close()
+// 	req.Header.Set("Authorization", "Bearer "+userJWT)
+// 	req.Header.Set("Content-Type", "application/json")
+// 	resp, err := http.DefaultClient.Do(req)
+// 	if err != nil {
+// 		return err
+// 	}
+// 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return fmt.Errorf("use_item returned status %d", resp.StatusCode)
-	}
-	return nil
-}
+// 	if resp.StatusCode != http.StatusOK {
+// 		return fmt.Errorf("use_item returned status %d", resp.StatusCode)
+// 	}
+// 	return nil
+// }
