@@ -135,7 +135,79 @@ func RunScript(script string, state *game.States, params map[string]any) (string
 								fmt.Printf("[OPEN_CELL] x=%d y=%d\n", x, y)
 								cmd := game.NewOpenCellCommand(game.Coord{X: x, Y: y})
 								tx.Add(cmd)
-								// ... остальные действия ...
+							case "SET_CELL_STATUS":
+								x, _ := resolveIntWithCtx(subArgs["x"], params)
+								y, _ := resolveIntWithCtx(subArgs["y"], params)
+								status, _ := subArgs["status"].(string)
+								cmd := &setCellStatusCommand{X: x, Y: y, Status: status}
+								tx.Add(cmd)
+							case "END_PLAYER_ACTION":
+								// no-op or handle as needed
+							case "REMOVE_SHIP":
+								x, _ := resolveIntWithCtx(subArgs["x"], params)
+								y, _ := resolveIntWithCtx(subArgs["y"], params)
+								cmd := game.NewRemoveShipCommand(game.Coord{X: x, Y: y})
+								tx.Add(cmd)
+							case "PLACE_SHIP":
+								x, _ := resolveIntWithCtx(subArgs["x"], params)
+								y, _ := resolveIntWithCtx(subArgs["y"], params)
+								cmd := game.NewPlaceShipCommand(1, game.Coord{X: x, Y: y}, false) // TODO: get len/bearings from args
+								tx.Add(cmd)
+							case "HEAL_SHIP":
+								x, _ := resolveIntWithCtx(subArgs["x"], params)
+								y, _ := resolveIntWithCtx(subArgs["y"], params)
+								cmd := game.NewHealShipCommand(game.Coord{X: x, Y: y})
+								tx.Add(cmd)
+							case "SHOOT":
+								x, _ := resolveIntWithCtx(subArgs["x"], params)
+								y, _ := resolveIntWithCtx(subArgs["y"], params)
+								cmd := game.NewShootCommand(game.Coord{X: x, Y: y})
+								tx.Add(cmd)
+							}
+						}
+					} else if subMap, ok := caseVal.(map[string]interface{}); ok {
+						for subK, subV := range subMap {
+							subActionName := subK
+							subArgs, _ := subV.(map[string]interface{})
+							switch subActionName {
+							case "OPEN_CELL":
+								x, _ := resolveIntWithCtx(subArgs["x"], params)
+								y, _ := resolveIntWithCtx(subArgs["y"], params)
+								if x < 0 || x >= 10 || y < 0 || y >= 10 {
+									fmt.Printf("[OPEN_CELL] SKIP: out of bounds x=%d y=%d\n", x, y)
+									continue
+								}
+								fmt.Printf("[OPEN_CELL] x=%d y=%d\n", x, y)
+								cmd := game.NewOpenCellCommand(game.Coord{X: x, Y: y})
+								tx.Add(cmd)
+							case "SET_CELL_STATUS":
+								x, _ := resolveIntWithCtx(subArgs["x"], params)
+								y, _ := resolveIntWithCtx(subArgs["y"], params)
+								status, _ := subArgs["status"].(string)
+								cmd := &setCellStatusCommand{X: x, Y: y, Status: status}
+								tx.Add(cmd)
+							case "END_PLAYER_ACTION":
+								// no-op or handle as needed
+							case "REMOVE_SHIP":
+								x, _ := resolveIntWithCtx(subArgs["x"], params)
+								y, _ := resolveIntWithCtx(subArgs["y"], params)
+								cmd := game.NewRemoveShipCommand(game.Coord{X: x, Y: y})
+								tx.Add(cmd)
+							case "PLACE_SHIP":
+								x, _ := resolveIntWithCtx(subArgs["x"], params)
+								y, _ := resolveIntWithCtx(subArgs["y"], params)
+								cmd := game.NewPlaceShipCommand(1, game.Coord{X: x, Y: y}, false) // TODO: get len/bearings from args
+								tx.Add(cmd)
+							case "HEAL_SHIP":
+								x, _ := resolveIntWithCtx(subArgs["x"], params)
+								y, _ := resolveIntWithCtx(subArgs["y"], params)
+								cmd := game.NewHealShipCommand(game.Coord{X: x, Y: y})
+								tx.Add(cmd)
+							case "SHOOT":
+								x, _ := resolveIntWithCtx(subArgs["x"], params)
+								y, _ := resolveIntWithCtx(subArgs["y"], params)
+								cmd := game.NewShootCommand(game.Coord{X: x, Y: y})
+								tx.Add(cmd)
 							}
 						}
 					}
@@ -206,10 +278,108 @@ func resolveInt(val interface{}, params map[string]any) (int, bool) {
 
 // Универсальный парсер выражений с + и - (например, "{'Name': 'RAND', ...} - $FIELD_SIZE + $x")
 func evalComplexExpr(expr string, params map[string]any) (int, bool) {
-	// ... реализация ...
-	return 0, false // TODO: перенести реализацию из item.go
+	tokens := splitExprTokens(expr)
+	if len(tokens) == 0 {
+		return 0, false
+	}
+	res, ok := resolveIntToken(tokens[0], params)
+	if !ok {
+		return 0, false
+	}
+	for i := 1; i < len(tokens)-1; i += 2 {
+		op := tokens[i]
+		val, ok := resolveIntToken(tokens[i+1], params)
+		if !ok {
+			return 0, false
+		}
+		if op == "+" {
+			res += val
+		} else if op == "-" {
+			res -= val
+		}
+	}
+	return res, true
 }
 
+// Разделяет выражение на токены: операнды и операторы
+func splitExprTokens(expr string) []string {
+	expr = strings.ReplaceAll(expr, " ", "")
+	tokens := []string{}
+	buf := ""
+	inObj := 0
+	for i := 0; i < len(expr); i++ {
+		c := expr[i]
+		if c == '{' {
+			inObj++
+		}
+		if c == '}' {
+			inObj--
+		}
+		if (c == '+' || c == '-') && inObj == 0 {
+			if buf != "" {
+				tokens = append(tokens, buf)
+				buf = ""
+			}
+			tokens = append(tokens, string(c))
+			continue
+		}
+		buf += string(c)
+	}
+	if buf != "" {
+		tokens = append(tokens, buf)
+	}
+	return tokens
+}
+
+// Преобразует токен в значение int (учитывает объекты, переменные, числа)
+func resolveIntToken(token string, params map[string]any) (int, bool) {
+	token = strings.TrimSpace(token)
+	if strings.HasPrefix(token, "$") {
+		return resolveInt(token[1:], params)
+	}
+	if n, ok := strconv.Atoi(token); ok == nil {
+		return n, true
+	}
+	if p, ok := params[token]; ok {
+		return resolveInt(p, params)
+	}
+	// Попытка распарсить как JSON-объект (например, {'Name': 'RAND', ...})
+	if strings.HasPrefix(token, "{") && strings.HasSuffix(token, "}") {
+		var m map[string]interface{}
+		err := json.Unmarshal([]byte(strings.ReplaceAll(strings.ReplaceAll(token, "'", "\""), " ", "")), &m)
+		if err == nil {
+			return resolveInt(m, params)
+		}
+	}
+	return 0, false
+}
+
+type setCellStatusCommand struct {
+	X, Y   int
+	Status string
+}
+
+func (c *setCellStatusCommand) Apply(states *game.States) error {
+	gs := states.PlayerState
+	if !gs.IsInside(c.X, c.Y) {
+		return nil
+	}
+	var s int
+	switch c.Status {
+	case "open":
+		s = game.Open
+	case "close":
+		s = game.Close
+	default:
+		s = game.Open
+	}
+	gs.Field[c.X][c.Y].State = s
+	return nil
+}
+
+func (c *setCellStatusCommand) Undo(states *game.States) {}
+
+// resolveInt с поддержкой lastRand и FIELD_SIZE
 func resolveIntWithRand(val interface{}, params map[string]any, lastRand *int) (int, bool) {
 	switch v := val.(type) {
 	case float64:
@@ -257,33 +427,55 @@ func resolveIntWithRand(val interface{}, params map[string]any, lastRand *int) (
 	return 0, false
 }
 
-// Универсальный парсер выражений с + и - и поддержкой lastRand
+// evalComplexExprWithRand аналогична evalComplexExpr, но с поддержкой lastRand
 func evalComplexExprWithRand(expr string, params map[string]any, lastRand *int) (int, bool) {
-	// ... реализация ...
-	return 0, false // TODO: перенести реализацию из item.go
-}
-
-type setCellStatusCommand struct {
-	X, Y   int
-	Status string
-}
-
-func (c *setCellStatusCommand) Apply(states *game.States) error {
-	gs := states.PlayerState
-	if !gs.IsInside(c.X, c.Y) {
-		return nil
+	tokens := splitExprTokens(expr)
+	if len(tokens) == 0 {
+		return 0, false
 	}
-	var s int
-	switch c.Status {
-	case "open":
-		s = game.Open
-	case "close":
-		s = game.Close
-	default:
-		s = game.Open
+	res, ok := resolveIntTokenWithRand(tokens[0], params, lastRand)
+	if !ok {
+		return 0, false
 	}
-	gs.Field[c.X][c.Y].State = s
-	return nil
+	for i := 1; i < len(tokens)-1; i += 2 {
+		op := tokens[i]
+		val, ok := resolveIntTokenWithRand(tokens[i+1], params, lastRand)
+		if !ok {
+			return 0, false
+		}
+		if op == "+" {
+			res += val
+		} else if op == "-" {
+			res -= val
+		}
+	}
+	return res, true
 }
 
-func (c *setCellStatusCommand) Undo(states *game.States) {}
+// resolveIntTokenWithRand аналогична resolveIntToken, но с поддержкой lastRand
+func resolveIntTokenWithRand(token string, params map[string]any, lastRand *int) (int, bool) {
+	token = strings.TrimSpace(token)
+	if token == "FIELD_SIZE" {
+		return 9, true
+	}
+	if token == "PREV_RAND" {
+		return *lastRand, true
+	}
+	if strings.HasPrefix(token, "$") {
+		return resolveIntWithRand(token[1:], params, lastRand)
+	}
+	if n, ok := strconv.Atoi(token); ok == nil {
+		return n, true
+	}
+	if p, ok := params[token]; ok {
+		return resolveIntWithRand(p, params, lastRand)
+	}
+	if strings.HasPrefix(token, "{") && strings.HasSuffix(token, "}") {
+		var m map[string]interface{}
+		err := json.Unmarshal([]byte(strings.ReplaceAll(strings.ReplaceAll(token, "'", "\""), " ", "")), &m)
+		if err == nil {
+			return resolveIntWithRand(m, params, lastRand)
+		}
+	}
+	return 0, false
+}
