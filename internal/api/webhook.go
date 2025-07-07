@@ -1,11 +1,12 @@
 package api
 
 import (
+	"log"
 	"net/http"
 	"time"
 
 	"github.com/lesta-battleship/server-core/internal/game"
-	// "github.com/lesta-battleship/server-core/internal/items"
+	"github.com/lesta-battleship/server-core/internal/items"
 	"github.com/lesta-battleship/server-core/internal/match"
 
 	"github.com/gin-gonic/gin"
@@ -28,6 +29,24 @@ func StartMatch(c *gin.Context) {
 	// 	log.Printf("пизда рулям")
 	// }
 
+	// testoviy token (admina), ispolzuyem inventar odnogo usera na 2
+	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiYWRtaW4ifQ.JzhxV6sJhyTWgr4F-_EeDHg3-urRQiZUWYU9EvMZNHU"
+
+	itemsPlayer1, err := items.GetUserItems(token); 
+	if err != nil {
+		log.Printf("error fetching number of items for player1 %v", err)
+	}
+
+	itemsPlayer2, err := items.GetUserItems(token); 
+	if err != nil {
+		log.Printf("error fetching number of items for player2 %v", err)
+	}
+
+	allItems, err := items.GetAllItems(); 
+	if err != nil {
+		log.Printf("error fetching all items %v", err)
+	}
+
 	player1State := game.NewGameState()
 	player2State := game.NewGameState()
 
@@ -40,7 +59,7 @@ func StartMatch(c *gin.Context) {
 				PlayerState: player1State,
 				EnemyState:  player2State,
 			},
-			// Items: items.ItemsPlayer1,
+			Items: itemsPlayer1,
 		},
 		Player2: &match.PlayerConn{
 			ID: payload.Player2,
@@ -48,11 +67,11 @@ func StartMatch(c *gin.Context) {
 				PlayerState: player2State,
 				EnemyState:  player1State,
 			},
-			// Items: items.ItemsPlayer2,
+			Items: itemsPlayer2,
 		},
 		Status:    "waiting",
 		CreatedAt: time.Now(),
-		// Items:     items.Items,
+		Items:     allItems,
 	}
 
 	match.Rooms.Store(payload.RoomID, room)
