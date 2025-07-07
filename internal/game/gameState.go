@@ -16,7 +16,7 @@ type Coord struct {
 }
 
 type Ship struct {
-	ID int `json:"id"`
+	ID       int            `json:"id"`
 	Len      int            `json:"len"`
 	Coords   Coord          `json:"coords"`
 	Bearings bool           `json:"bearings"` // ориентация

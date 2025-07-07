@@ -17,6 +17,8 @@ type Item struct {
 	Description string `json:"description"`
 	Script      string `json:"script"`
 	ID          ItemID `json:"id"`
+	UseLimit    int    `json:"use_limit"`
+	Cooldown    int    `json:"cooldown"`
 }
 
 func UseItem(id ItemID, state *game.States, itemsList map[ItemID]*Item, params map[string]any) (string, error) {
@@ -25,26 +27,30 @@ func UseItem(id ItemID, state *game.States, itemsList map[ItemID]*Item, params m
 		return "", fmt.Errorf("item with id %d not found", id)
 	}
 
-	// if err := UseInventoryItem(id, userJWT); err != nil {
-	// 	return "", fmt.Errorf("failed to use item in inventory: %w", err)
-	// }
+	if item.UseLimit > 0 {
+		used := 0
+		if v, ok := params["used_count"].(int); ok {
+			used = v
+		}
+		if used >= item.UseLimit {
+			return "", fmt.Errorf("use limit reached for item %d", id)
+		}
+	}
+
+	if item.Cooldown > 0 {
+		if lastTurn, ok := params["last_used_turn"].(int); ok {
+			currentTurn := 0
+			if v, ok := params["turn"].(int); ok {
+				currentTurn = v
+			}
+			if currentTurn > 0 && lastTurn > 0 && currentTurn-lastTurn < item.Cooldown {
+				return "", fmt.Errorf("cooldown not expired for item %d", id)
+			}
+		}
+	}
 
 	return RunScript(item.Script, state, params)
 }
-
-// func GetAllItems() ([]Item, error) {
-// 	resp, err := http.Get(BaseItemsAPIURL + "/items/")
-// 	if err != nil {
-// 		return nil, err
-// 	}
-// 	defer resp.Body.Close()
-
-// 	var items []Item
-// 	if err := json.NewDecoder(resp.Body).Decode(&items); err != nil {
-// 		return nil, err
-// 	}
-// 	return items, nil
-// }
 
 // нам нужен в мааап
 func GetAllItems() (map[ItemID]*Item, error) {
@@ -105,27 +111,3 @@ func GetUserItems(userJWT string) (map[ItemID]int, error) {
 
 	return result, nil
 }
-
-// func UseInventoryItem(itemID ItemID, userJWT string) error {
-// 	url := BaseItemsAPIURL + "/inventory/use_item"
-// 	payload := map[string]interface{}{"item_id": int(itemID), "amount": 1}
-
-// 	body, _ := json.Marshal(payload)
-// 	req, err := http.NewRequest("PATCH", url, bytes.NewReader(body))
-// 	if err != nil {
-// 		return err
-// 	}
-
-// 	req.Header.Set("Authorization", "Bearer "+userJWT)
-// 	req.Header.Set("Content-Type", "application/json")
-// 	resp, err := http.DefaultClient.Do(req)
-// 	if err != nil {
-// 		return err
-// 	}
-// 	defer resp.Body.Close()
-
-// 	if resp.StatusCode != http.StatusOK {
-// 		return fmt.Errorf("use_item returned status %d", resp.StatusCode)
-// 	}
-// 	return nil
-// }
