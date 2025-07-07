@@ -26,8 +26,6 @@ func (h *ShootHandler) Handle(input any, ctx *wsiface.Context) error {
 		return SendError(ctx.Conn, "invalid input format for shoot")
 	}
 
-	log.Printf("[SHOOT] %s firing at (%d,%d)", ctx.Player.ID, wsInput.X, wsInput.Y)
-
 	if ctx.Room.Status != "playing" {
 		return SendError(ctx.Conn, "game not started")
 	}
@@ -58,6 +56,8 @@ func (h *ShootHandler) Handle(input any, ctx *wsiface.Context) error {
 		log.Println("[SHOOT] Error:", err)
 		return SendError(ctx.Conn, err.Error())
 	}
+
+	log.Printf("[SHOOT] %s firing at (%d,%d)", ctx.Player.ID, wsInput.X, wsInput.Y)
 
 	gameOver := true
 	for _, ship := range target.States.PlayerState.Ships {
