@@ -25,24 +25,20 @@ func StartMatch(c *gin.Context) {
 		return
 	}
 
-	// if items, err := items.GetItemsInfo(payload.Player1, payload.Player2); err != nil {
-	// 	log.Printf("пизда рулям")
-	// }
-
 	// testoviy token (admina), ispolzuyem inventar odnogo usera na 2
 	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiYWRtaW4ifQ.JzhxV6sJhyTWgr4F-_EeDHg3-urRQiZUWYU9EvMZNHU"
 
-	itemsPlayer1, err := items.GetUserItems(token); 
+	itemsPlayer1, err := items.GetUserItems(token)
 	if err != nil {
 		log.Printf("error fetching number of items for player1 %v", err)
 	}
 
-	itemsPlayer2, err := items.GetUserItems(token); 
+	itemsPlayer2, err := items.GetUserItems(token)
 	if err != nil {
 		log.Printf("error fetching number of items for player2 %v", err)
 	}
 
-	allItems, err := items.GetAllItems(); 
+	allItems, err := items.GetAllItems()
 	if err != nil {
 		log.Printf("error fetching all items %v", err)
 	}
