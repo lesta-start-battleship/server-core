@@ -28,6 +28,8 @@ func RunScript(script string, state *game.States, params map[string]any) ([]Item
 	tx := transaction.NewTransaction()
 	var lastRand int
 	var effects []ItemEffect
+	var openCmds []*game.OpenCellCommand
+	var healCmds []*game.HealShipCommand 
 
 	resolveIntWithCtx := func(val interface{}, params map[string]any) (int, bool) {
 		return resolveIntWithRand(val, params, &lastRand)
@@ -55,6 +57,7 @@ func RunScript(script string, state *game.States, params map[string]any) ([]Item
 			}
 			cmd := game.NewOpenCellCommand(coord)
 			tx.Add(cmd)
+			openCmds = append(openCmds, cmd)
 			addEffect("open", coord)
 
 		case "SET_CELL_STATUS":
@@ -73,6 +76,7 @@ func RunScript(script string, state *game.States, params map[string]any) ([]Item
 		case "HEAL_SHIP":
 			cmd := game.NewHealShipCommand(coord)
 			tx.Add(cmd)
+			healCmds = append(healCmds, cmd) // <--
 			addEffect("heal", coord)
 
 		case "SHOOT":
@@ -82,6 +86,7 @@ func RunScript(script string, state *game.States, params map[string]any) ([]Item
 		}
 	}
 
+	// обработка скрипта
 	for _, actRaw := range scriptObj.Actions {
 		actMap := map[string]interface{}{}
 		if m, ok := actRaw.(map[string]interface{}); ok {
@@ -121,9 +126,44 @@ func RunScript(script string, state *game.States, params map[string]any) ([]Item
 		}
 	}
 
+	// Выполняем все команды
 	if err := tx.Execute(state); err != nil {
 		return nil, err
 	}
+
+	// Добавим is_ship для open
+	for i := range effects {
+		if effects[i].Type != "open" {
+			continue
+		}
+		for j := range effects[i].Coords {
+			coord := &effects[i].Coords[j]
+			for _, cmd := range openCmds {
+				if cmd.Coords.X == coord.X && cmd.Coords.Y == coord.Y {
+					coord.IsShip = &cmd.ShipFound
+					break
+				}
+			}
+		}
+	}
+
+	// Добавим is_ship для heal (всегда true, раз прошло Apply)
+	for i := range effects {
+		if effects[i].Type != "heal" {
+			continue
+		}
+		for j := range effects[i].Coords {
+			coord := &effects[i].Coords[j]
+			for _, cmd := range healCmds {
+				if cmd.Coords.X == coord.X && cmd.Coords.Y == coord.Y {
+					trueVal := true
+					coord.IsShip = &trueVal
+					break
+				}
+			}
+		}
+	}
+
 	return effects, nil
 }
 

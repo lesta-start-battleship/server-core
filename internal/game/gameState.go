@@ -11,8 +11,9 @@ const (
 )
 
 type Coord struct {
-	X int `json:"x"`
-	Y int `json:"y"`
+	X      int   `json:"x"`
+	Y      int   `json:"y"`
+	IsShip *bool `json:"is_ship,omitempty"`
 }
 
 type Ship struct {
