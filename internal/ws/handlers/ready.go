@@ -14,9 +14,9 @@ func (h *ReadyHandler) Handle(input any, ctx *wsiface.Context) error {
 	ctx.Room.Mutex.Lock()
 	defer ctx.Room.Mutex.Unlock()
 
-	// if ctx.Player.States.PlayerState.NumShips < 10 {
-	// 	return SendError(ctx.Conn, "you must place 10 ships before ready")
-	// }
+	if ctx.Player.States.PlayerState.NumShips < 10 {
+		return SendError(ctx.Conn, "you must place 10 ships before ready")
+	}
 
 	ctx.Player.Ready = true
 	allReady := ctx.Room.Player1.Ready && ctx.Room.Player2.Ready
