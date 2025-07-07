@@ -2,7 +2,7 @@ package match
 
 import (
 	"github.com/lesta-battleship/server-core/internal/game"
-	// "github.com/lesta-battleship/server-core/internal/items"
+	"github.com/lesta-battleship/server-core/internal/items"
 	"sync"
 	"time"
 
@@ -14,7 +14,7 @@ type PlayerConn struct {
 	Ready bool
 	States *game.States // ВАЖНО чтобы при создании GameRoom было создано всего 2 GameState, а не 4
 	Conn  *websocket.Conn
-	// Items map[items.ItemID]int // хранит количество предметов у юзера
+	Items map[items.ItemID]int // хранит количество предметов у юзера
 }
 
 type GameRoom struct {
@@ -27,7 +27,7 @@ type GameRoom struct {
 	WinnerID  string
 	Mutex     sync.Mutex
 	CreatedAt time.Time
-	// Items map[items.ItemID] *items.Item // хранит артефакты доступные в игре
+	Items map[items.ItemID] *items.Item // хранит артефакты доступные в игре
 }
 
 var Rooms sync.Map
