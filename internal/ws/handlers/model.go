@@ -2,7 +2,7 @@ package handlers
 
 import (
 	"github.com/lesta-battleship/server-core/internal/game"
-	// "github.com/lesta-battleship/server-core/internal/items"
+	"github.com/lesta-battleship/server-core/internal/items"
 )
 
 const (
@@ -21,12 +21,14 @@ const (
 	EventError = "event_error"
 )
 
+// TODO: нужно подумать про инпут предметов
 type WSInput struct {
-	Event  string    `json:"event"`
-	Ship   game.Ship `json:"ship"`
-	X      int       `json:"x"`
-	Y      int       `json:"y"`
-	ItemID int       `json:"itemid"`
+	Event  string         `json:"event"`
+	Ship   *game.Ship     `json:"ship,omitempty"`
+	X      int            `json:"x,omitempty"`
+	Y      int            `json:"y,omitempty"`
+	ItemID int            `json:"item_id,omitempty"`
+	Params map[string]any `json:"params,omitempty"`
 }
 
 type WSResponse struct {
@@ -63,8 +65,10 @@ type GameEndResponse struct {
 	Winner string `json:"winner"`
 }
 
-// type ItemUsedResponse struct {
-// 	Coords []game.Coord `json:"coords"`
-// 	ItemID items.ItemID `json:"item_id"`
-// 	By     string       `json:"by"`
-// }
+// TODO: нужно подумать про респонс айтемов
+type ItemUsedResponse struct {
+	ItemID items.ItemID `json:"item_id"`
+	Name   string       `json:"name"`
+	By     string       `json:"by"`
+	Result string       `json:"result"`
+}

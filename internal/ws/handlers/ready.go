@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"errors"
+	// "errors"
 	"github.com/lesta-battleship/server-core/internal/match"
 
 	"github.com/gorilla/websocket"
@@ -11,11 +11,13 @@ func HandleReady(room *match.GameRoom, player *match.PlayerConn, conn *websocket
 	room.Mutex.Lock()
 	defer room.Mutex.Unlock()
 
-	if player.States.PlayerState.NumShips < 10 {
-		err := errors.New("you must place 10 ships before ready")
-		SendError(conn, err.Error())
-		return err
-	}
+	// TODO: после тестов убрать комменты
+
+	// if player.States.PlayerState.NumShips < 10 {
+	// 	err := errors.New("you must place 10 ships before ready")
+	// 	SendError(conn, err.Error())
+	// 	return err
+	// }
 
 	player.Ready = true
 	allReady := room.Player1.Ready && room.Player2.Ready
