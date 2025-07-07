@@ -118,7 +118,9 @@ func evalExpr(expr string, params map[string]interface{}, prevRand float64) (int
 		for i, op := range ops {
 			if op == "+" {
 				res += nums[i+1]
-			} else if op == "-" {
+			}
+
+			if op == "-" {
 				res -= nums[i+1]
 			}
 		}
