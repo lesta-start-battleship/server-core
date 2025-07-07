@@ -17,13 +17,11 @@ type Coord struct {
 
 type Ship struct {
 	ID int `json:"id"`
-	// Type   ShipType `json:"type"`
 	Len      int            `json:"len"`
 	Coords   Coord          `json:"coords"`
 	Bearings bool           `json:"bearings"` // ориентация
 	Health   int            `json:"health"`
 	Decks    map[Coord]bool `json:"decks"`
-	// Coords []Coord  `json:"coords"`
 }
 
 type GameState struct {
