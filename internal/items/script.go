@@ -12,9 +12,9 @@ import (
 	"github.com/lesta-battleship/server-core/internal/transaction"
 )
 
-func RunScript(script string, state *game.States, params map[string]any) (string, error) {
+func RunScript(script string, state *game.States, params map[string]any) ([]ItemEffect, error) {
 	if script == "" {
-		return "", nil
+		return nil, nil
 	}
 
 	var scriptObj struct {
@@ -22,204 +22,109 @@ func RunScript(script string, state *game.States, params map[string]any) (string
 		Actions []interface{} `json:"actions"`
 	}
 	if err := json.Unmarshal([]byte(script), &scriptObj); err != nil {
-		return "", err
+		return nil, err
 	}
 
 	tx := transaction.NewTransaction()
 	var lastRand int
+	var effects []ItemEffect
 
 	resolveIntWithCtx := func(val interface{}, params map[string]any) (int, bool) {
 		return resolveIntWithRand(val, params, &lastRand)
 	}
 
+	addEffect := func(effectType string, coord game.Coord) {
+		for i := range effects {
+			if effects[i].Type == effectType {
+				effects[i].Coords = append(effects[i].Coords, coord)
+				return
+			}
+		}
+		effects = append(effects, ItemEffect{Type: effectType, Coords: []game.Coord{coord}})
+	}
+
+	processAction := func(actionName string, args map[string]interface{}) {
+		x, _ := resolveIntWithCtx(args["x"], params)
+		y, _ := resolveIntWithCtx(args["y"], params)
+		coord := game.Coord{X: x, Y: y}
+
+		switch actionName {
+		case "OPEN_CELL":
+			if x < 0 || x >= 10 || y < 0 || y >= 10 {
+				return
+			}
+			cmd := game.NewOpenCellCommand(coord)
+			tx.Add(cmd)
+			addEffect("open", coord)
+
+		case "SET_CELL_STATUS":
+			status, _ := args["status"].(string)
+			cmd := &setCellStatusCommand{X: x, Y: y, Status: status}
+			tx.Add(cmd)
+
+		case "REMOVE_SHIP":
+			cmd := game.NewRemoveShipCommand(coord)
+			tx.Add(cmd)
+
+		case "PLACE_SHIP":
+			cmd := game.NewPlaceShipCommand(1, coord, false)
+			tx.Add(cmd)
+
+		case "HEAL_SHIP":
+			cmd := game.NewHealShipCommand(coord)
+			tx.Add(cmd)
+			addEffect("heal", coord)
+
+		case "SHOOT":
+			cmd := game.NewShootCommand(coord)
+			tx.Add(cmd)
+			addEffect("shoot", coord)
+		}
+	}
+
 	for _, actRaw := range scriptObj.Actions {
-		var actMap map[string]interface{}
+		actMap := map[string]interface{}{}
 		if m, ok := actRaw.(map[string]interface{}); ok {
 			actMap = m
 		} else {
 			b, _ := json.Marshal(actRaw)
-			json.Unmarshal(b, &actMap)
+			_ = json.Unmarshal(b, &actMap)
 		}
 
-		for k, v := range actMap {
-			var actionName string
-			var args map[string]interface{}
-			if k == "Name" {
-				actionName = v.(string)
-				if a, ok := actMap["Args"]; ok {
-					args, _ = a.(map[string]interface{})
-				}
-			} else {
-				actionName = k
-				if a, ok := v.(map[string]interface{}); ok {
-					args = a
-				}
+		if name, ok := actMap["Name"].(string); ok {
+			if args, ok := actMap["Args"].(map[string]interface{}); ok {
+				processAction(name, args)
 			}
-
-			switch actionName {
-			case "OPEN_CELL":
-				x, _ := resolveIntWithCtx(args["x"], params)
-				y, _ := resolveIntWithCtx(args["y"], params)
-				if x < 0 || x >= 10 || y < 0 || y >= 10 {
-					fmt.Printf("[OPEN_CELL] SKIP: out of bounds x=%d y=%d\n", x, y)
-					continue
-				}
-				fmt.Printf("[OPEN_CELL] x=%d y=%d\n", x, y)
-				cmd := game.NewOpenCellCommand(game.Coord{X: x, Y: y})
-				tx.Add(cmd)
-			case "SET_CELL_STATUS":
-				x, _ := resolveIntWithCtx(args["x"], params)
-				y, _ := resolveIntWithCtx(args["y"], params)
-				status, _ := args["status"].(string)
-				cmd := &setCellStatusCommand{X: x, Y: y, Status: status}
-				tx.Add(cmd)
-			case "END_PLAYER_ACTION":
-				// no-op or handle as needed
-			case "REMOVE_SHIP":
-				x, _ := resolveIntWithCtx(args["x"], params)
-				y, _ := resolveIntWithCtx(args["y"], params)
-				cmd := game.NewRemoveShipCommand(game.Coord{X: x, Y: y})
-				tx.Add(cmd)
-			case "PLACE_SHIP":
-				x, _ := resolveIntWithCtx(args["x"], params)
-				y, _ := resolveIntWithCtx(args["y"], params)
-				cmd := game.NewPlaceShipCommand(1, game.Coord{X: x, Y: y}, false) // TODO: get len/bearings from args
-				tx.Add(cmd)
-			case "HEAL_SHIP":
-				x, _ := resolveIntWithCtx(args["x"], params)
-				y, _ := resolveIntWithCtx(args["y"], params)
-				cmd := game.NewHealShipCommand(game.Coord{X: x, Y: y})
-				tx.Add(cmd)
-			case "SHOOT":
-				x, _ := resolveIntWithCtx(args["x"], params)
-				y, _ := resolveIntWithCtx(args["y"], params)
-				cmd := game.NewShootCommand(game.Coord{X: x, Y: y})
-				tx.Add(cmd)
-			case "SWITCH_CASE", "SWICH_CASE":
-				caseKey := "1"
-				if dir, ok := params["direction"]; ok {
-					caseKey = fmt.Sprintf("%v", dir)
-				}
-				fmt.Printf("[SWITCH_CASE] direction=%v, caseKey=%s\n", params["direction"], caseKey)
-				if caseVal, ok := args[caseKey]; ok {
-					fmt.Printf("[SWITCH_CASE] caseVal type=%T, value=%#v\n", caseVal, caseVal)
-					if arr, ok := caseVal.([]interface{}); ok {
-						fmt.Printf("[SWITCH_CASE] arr len=%d\n", len(arr))
-						for idx, subAct := range arr {
-							fmt.Printf("[SWITCH_CASE] subAct[%d] type=%T, value=%#v\n", idx, subAct, subAct)
-							subMap, ok := subAct.(map[string]interface{})
-							if !ok {
-								fmt.Printf("[SWITCH_CASE] subAct[%d] is not map[string]interface{}\n", idx)
-								continue
-							}
-							subActionName, ok := subMap["Name"].(string)
-							if !ok {
-								fmt.Printf("[SWITCH_CASE] subMap has no string Name, value=%#v\n", subMap["Name"])
-								continue
-							}
-							subArgs, ok := subMap["Args"].(map[string]interface{})
-							if !ok {
-								fmt.Printf("[SWITCH_CASE] subMap has no map Args, value=%#v\n", subMap["Args"])
-								continue
-							}
-							fmt.Printf("[SWITCH_CASE] subActionName=%s, subArgs=%#v\n", subActionName, subArgs)
-							switch subActionName {
-							case "OPEN_CELL":
-								x, _ := resolveIntWithCtx(subArgs["x"], params)
-								y, _ := resolveIntWithCtx(subArgs["y"], params)
-								if x < 0 || x >= 10 || y < 0 || y >= 10 {
-									fmt.Printf("[OPEN_CELL] SKIP: out of bounds x=%d y=%d\n", x, y)
-									continue
+		} else {
+			for k, v := range actMap {
+				if args, ok := v.(map[string]interface{}); ok {
+					if k == "SWITCH_CASE" || k == "SWICH_CASE" {
+						caseKey := "1"
+						if dir, ok := params["direction"]; ok {
+							caseKey = fmt.Sprintf("%v", dir)
+						}
+						if caseVal, ok := args[caseKey]; ok {
+							if arr, ok := caseVal.([]interface{}); ok {
+								for _, sub := range arr {
+									subMap, _ := sub.(map[string]interface{})
+									subName, _ := subMap["Name"].(string)
+									subArgs, _ := subMap["Args"].(map[string]interface{})
+									processAction(subName, subArgs)
 								}
-								fmt.Printf("[OPEN_CELL] x=%d y=%d\n", x, y)
-								cmd := game.NewOpenCellCommand(game.Coord{X: x, Y: y})
-								tx.Add(cmd)
-							case "SET_CELL_STATUS":
-								x, _ := resolveIntWithCtx(subArgs["x"], params)
-								y, _ := resolveIntWithCtx(subArgs["y"], params)
-								status, _ := subArgs["status"].(string)
-								cmd := &setCellStatusCommand{X: x, Y: y, Status: status}
-								tx.Add(cmd)
-							case "END_PLAYER_ACTION":
-								// no-op or handle as needed
-							case "REMOVE_SHIP":
-								x, _ := resolveIntWithCtx(subArgs["x"], params)
-								y, _ := resolveIntWithCtx(subArgs["y"], params)
-								cmd := game.NewRemoveShipCommand(game.Coord{X: x, Y: y})
-								tx.Add(cmd)
-							case "PLACE_SHIP":
-								x, _ := resolveIntWithCtx(subArgs["x"], params)
-								y, _ := resolveIntWithCtx(subArgs["y"], params)
-								cmd := game.NewPlaceShipCommand(1, game.Coord{X: x, Y: y}, false) // TODO: get len/bearings from args
-								tx.Add(cmd)
-							case "HEAL_SHIP":
-								x, _ := resolveIntWithCtx(subArgs["x"], params)
-								y, _ := resolveIntWithCtx(subArgs["y"], params)
-								cmd := game.NewHealShipCommand(game.Coord{X: x, Y: y})
-								tx.Add(cmd)
-							case "SHOOT":
-								x, _ := resolveIntWithCtx(subArgs["x"], params)
-								y, _ := resolveIntWithCtx(subArgs["y"], params)
-								cmd := game.NewShootCommand(game.Coord{X: x, Y: y})
-								tx.Add(cmd)
 							}
 						}
-					} else if subMap, ok := caseVal.(map[string]interface{}); ok {
-						for subK, subV := range subMap {
-							subActionName := subK
-							subArgs, _ := subV.(map[string]interface{})
-							switch subActionName {
-							case "OPEN_CELL":
-								x, _ := resolveIntWithCtx(subArgs["x"], params)
-								y, _ := resolveIntWithCtx(subArgs["y"], params)
-								if x < 0 || x >= 10 || y < 0 || y >= 10 {
-									fmt.Printf("[OPEN_CELL] SKIP: out of bounds x=%d y=%d\n", x, y)
-									continue
-								}
-								fmt.Printf("[OPEN_CELL] x=%d y=%d\n", x, y)
-								cmd := game.NewOpenCellCommand(game.Coord{X: x, Y: y})
-								tx.Add(cmd)
-							case "SET_CELL_STATUS":
-								x, _ := resolveIntWithCtx(subArgs["x"], params)
-								y, _ := resolveIntWithCtx(subArgs["y"], params)
-								status, _ := subArgs["status"].(string)
-								cmd := &setCellStatusCommand{X: x, Y: y, Status: status}
-								tx.Add(cmd)
-							case "END_PLAYER_ACTION":
-								// no-op or handle as needed
-							case "REMOVE_SHIP":
-								x, _ := resolveIntWithCtx(subArgs["x"], params)
-								y, _ := resolveIntWithCtx(subArgs["y"], params)
-								cmd := game.NewRemoveShipCommand(game.Coord{X: x, Y: y})
-								tx.Add(cmd)
-							case "PLACE_SHIP":
-								x, _ := resolveIntWithCtx(subArgs["x"], params)
-								y, _ := resolveIntWithCtx(subArgs["y"], params)
-								cmd := game.NewPlaceShipCommand(1, game.Coord{X: x, Y: y}, false) // TODO: get len/bearings from args
-								tx.Add(cmd)
-							case "HEAL_SHIP":
-								x, _ := resolveIntWithCtx(subArgs["x"], params)
-								y, _ := resolveIntWithCtx(subArgs["y"], params)
-								cmd := game.NewHealShipCommand(game.Coord{X: x, Y: y})
-								tx.Add(cmd)
-							case "SHOOT":
-								x, _ := resolveIntWithCtx(subArgs["x"], params)
-								y, _ := resolveIntWithCtx(subArgs["y"], params)
-								cmd := game.NewShootCommand(game.Coord{X: x, Y: y})
-								tx.Add(cmd)
-							}
-						}
+					} else {
+						processAction(k, args)
 					}
 				}
 			}
 		}
 	}
 
-	err := tx.Execute(state)
-	if err != nil {
-		return "", err
+	if err := tx.Execute(state); err != nil {
+		return nil, err
 	}
-	return "ok", nil
+	return effects, nil
 }
 
 var simpleExprRe = regexp.MustCompile(`^([a-zA-Z_][a-zA-Z0-9_]*)\s*([+-])\s*(\d+)$`)

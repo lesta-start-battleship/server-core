@@ -21,36 +21,20 @@ type Item struct {
 	Cooldown    int    `json:"cooldown"`
 }
 
-func UseItem(id ItemID, state *game.States, itemsList map[ItemID]*Item, params map[string]any) (string, error) {
-	item, ok := itemsList[id]
-	if !ok {
-		return "", fmt.Errorf("item with id %d not found", id)
-	}
-
-	if item.UseLimit > 0 {
-		used := 0
-		if v, ok := params["used_count"].(int); ok {
-			used = v
-		}
-		if used >= item.UseLimit {
-			return "", fmt.Errorf("use limit reached for item %d", id)
-		}
-	}
-
-	if item.Cooldown > 0 {
-		if lastTurn, ok := params["last_used_turn"].(int); ok {
-			currentTurn := 0
-			if v, ok := params["turn"].(int); ok {
-				currentTurn = v
-			}
-			if currentTurn > 0 && lastTurn > 0 && currentTurn-lastTurn < item.Cooldown {
-				return "", fmt.Errorf("cooldown not expired for item %d", id)
-			}
-		}
-	}
-
-	return RunScript(item.Script, state, params)
+type ItemEffect struct {
+	Type   string       `json:"type"` // "open", "heal", "shoot" и так далее карочи, заеб
+	Coords []game.Coord `json:"coords"`
 }
+
+// юзлес функция, не нужна
+// func UseItem(id ItemID, state *game.States, itemsList map[ItemID]*Item, params map[string]any) ([]ItemEffect, error) {
+// 	item, ok := itemsList[id]
+// 	if !ok {
+// 		return nil, fmt.Errorf("item with id %d not found", id)
+// 	}
+
+// 	return RunScript(item.Script, state, params)
+// }
 
 // нам нужен в мааап
 func GetAllItems() (map[ItemID]*Item, error) {

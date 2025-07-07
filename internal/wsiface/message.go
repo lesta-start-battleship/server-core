@@ -67,8 +67,8 @@ type GameEndResponse struct {
 
 // TODO: нужно подумать про респонс айтемов
 type ItemUsedResponse struct {
-	ItemID items.ItemID `json:"item_id"`
-	Name   string       `json:"name"`
-	By     string       `json:"by"`
-	Result string       `json:"result"`
+	ItemID  items.ItemID      `json:"item_id"`
+	Name    string            `json:"name"`
+	By      string            `json:"by"`
+	Effects []items.ItemEffect `json:"effects"`
 }

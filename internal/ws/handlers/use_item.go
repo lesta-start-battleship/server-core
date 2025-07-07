@@ -43,12 +43,12 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 	}
 	log.Println("nashli iz obshey kollekcii")
 
-	result, err := items.UseItem(itemID, ctx.Player.States, ctx.Room.Items, wsInput.Params)
+	effect, err := items.RunScript(itemData.Script, ctx.Player.States, wsInput.Params)
 	if err != nil {
-		log.Printf("[WS] Use item error: %v", err)
+		log.Printf("[WS] RunScript error: %v", err)
 		return SendError(ctx.Conn, err.Error())
 	}
-	log.Println("usenuli item")
+	log.Println("RunScript completed")
 
 	ctx.Player.Items[itemID]--
 
@@ -63,6 +63,6 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 		ItemID: itemID,
 		Name:   itemData.Name,
 		By:     ctx.Player.ID,
-		Result: result,
+		Effects: effect,
 	})
 }
