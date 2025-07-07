@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"log"
-	"time"
 
 	"github.com/lesta-battleship/server-core/internal/event"
 	"github.com/lesta-battleship/server-core/internal/game"
@@ -90,16 +89,63 @@ func (h *ShootHandler) Handle(input any, ctx *wsiface.Context) error {
 		ctx.Room.Status = "ended"
 		ctx.Room.WinnerID = ctx.Player.ID
 
-		matchResult := event.MatchResult{
-			WinnerID:  ctx.Player.ID,
-			LoserID:   target.ID,
-			MatchID:   ctx.Room.RoomID,
-			MatchDate: time.Now(),
-			MatchType: ctx.Room.Mode,
-			Experience: &event.Experience{
-				WinnerGain: 30,
-				LoserGain:  -15,
-			},
+		var matchResult event.MatchResult
+
+		if ctx.Room.Mode == "ranked" {
+			matchResult = event.MatchResult{
+				WinnerID:  ctx.Player.ID,
+				LoserID:   target.ID,
+				MatchID:   ctx.Room.RoomID,
+				MatchDate: ctx.Room.CreatedAt,
+				MatchType: ctx.Room.Mode,
+				Experience: &event.Experience{
+					WinnerGain: 30,
+					LoserGain:  15,
+				},
+				Rating: &event.Rating{
+					WinnerGain: 30,
+					LoserGain:  -15,
+				},
+			}
+		}
+
+		if ctx.Room.Mode == "random" {
+			matchResult = event.MatchResult{
+				WinnerID:  ctx.Player.ID,
+				LoserID:   target.ID,
+				MatchID:   ctx.Room.RoomID,
+				MatchDate: ctx.Room.CreatedAt,
+				MatchType: ctx.Room.Mode,
+				Experience: &event.Experience{
+					WinnerGain: 30,
+					LoserGain:  15,
+				},
+			}
+		}
+
+		if ctx.Room.Mode == "custom" {
+			matchResult = event.MatchResult{
+				WinnerID:  ctx.Player.ID,
+				LoserID:   target.ID,
+				MatchID:   ctx.Room.RoomID,
+				MatchDate: ctx.Room.CreatedAt,
+				MatchType: ctx.Room.Mode,
+			}
+		}
+
+		if ctx.Room.Mode == "guild_war_match" {
+			matchResult = event.MatchResult{
+				WinnerID:  ctx.Player.ID,
+				LoserID:   target.ID,
+				MatchID:   ctx.Room.RoomID,
+				WarID:     ctx.Room.GuildWarID,
+				MatchDate: ctx.Room.CreatedAt,
+				MatchType: ctx.Room.Mode,
+				Experience: &event.Experience{
+					WinnerGain: 30,
+					LoserGain:  15,
+				},
+			}
 		}
 
 		if err := ctx.Dispatcher.DispatchMatchResult(matchResult); err != nil {

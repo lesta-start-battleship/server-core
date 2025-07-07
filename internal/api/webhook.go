@@ -18,6 +18,7 @@ func StartMatch(c *gin.Context) {
 		Player1 string `json:"player1"`
 		Player2 string `json:"player2"`
 		Mode    string `json:"mode"`
+		GuildWarID   string `json:"guild_war_id,omitempty"`
 	}
 
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -68,6 +69,7 @@ func StartMatch(c *gin.Context) {
 		Status:    "waiting",
 		CreatedAt: time.Now(),
 		Items:     allItems,
+		GuildWarID: payload.GuildWarID,
 	}
 
 	match.Rooms.Store(payload.RoomID, room)
