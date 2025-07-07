@@ -97,12 +97,6 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 				continue
 			}
 
-		// case "use_item":
-		// 	if err := handlers.HandleItem(room, player, conn, input, dispatcher); err != nil {
-		// 		log.Printf("[WS] Use item error: %v", err)
-		// 		continue
-		// 	}
-
 		default:
 			handlers.SendError(conn, "unknown event")
 		}
