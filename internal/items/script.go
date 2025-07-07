@@ -294,7 +294,8 @@ func evalComplexExpr(expr string, params map[string]any) (int, bool) {
 		}
 		if op == "+" {
 			res += val
-		} else if op == "-" {
+		}
+		if op == "-" {
 			res -= val
 		}
 	}
@@ -445,7 +446,8 @@ func evalComplexExprWithRand(expr string, params map[string]any, lastRand *int) 
 		}
 		if op == "+" {
 			res += val
-		} else if op == "-" {
+		}
+		if op == "-" {
 			res -= val
 		}
 	}
