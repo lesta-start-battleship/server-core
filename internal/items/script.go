@@ -34,7 +34,8 @@ func RunScript(script string, state *game.States, params map[string]any) ([]Item
 	var lastRand int
 	var effects []ItemEffect
 	var openCmds []*game.OpenCellCommand
-	var healCmds []*game.HealShipCommand 
+	var healCmds []*game.HealShipCommand
+	openCmdCount := 0
 
 	resolveIntWithCtx := func(val interface{}, params map[string]any) (int, bool) {
 		return resolveIntWithRand(val, params, &lastRand)
@@ -57,13 +58,14 @@ func RunScript(script string, state *game.States, params map[string]any) ([]Item
 
 		switch actionName {
 		case "OPEN_CELL":
-			if x < 0 || x >= 10 || y < 0 || y >= 10 {
+			if !state.EnemyState.IsInside(x, y) {
 				return
 			}
 			cmd := game.NewOpenCellCommand(coord)
 			tx.Add(cmd)
 			openCmds = append(openCmds, cmd)
 			addEffect("open", coord)
+			openCmdCount++
 
 		case "SET_CELL_STATUS":
 			status, _ := args["status"].(string)
@@ -81,7 +83,7 @@ func RunScript(script string, state *game.States, params map[string]any) ([]Item
 		case "HEAL_SHIP":
 			cmd := game.NewHealShipCommand(coord)
 			tx.Add(cmd)
-			healCmds = append(healCmds, cmd) // <--
+			healCmds = append(healCmds, cmd)
 			addEffect("heal", coord)
 
 		case "SHOOT":
@@ -131,12 +133,17 @@ func RunScript(script string, state *game.States, params map[string]any) ([]Item
 		}
 	}
 
-	// Выполняем все команды
+	// если были только OPEN_CELL и все оказались вне поля — ошибка, то есть если чел вообще не попал никакой координатой, то эррор. А если попал хоть 1 то айтем юзнется
+	if openCmdCount == 0 && len(openCmds) == 0 && len(effects) == 0 {
+		return nil, fmt.Errorf("all coordinates are out of bounds")
+	}
+
+	// выполняем все команды
 	if err := tx.Execute(state); err != nil {
 		return nil, err
 	}
 
-	// Добавим is_ship для open
+	// добавим is_ship для open
 	for i := range effects {
 		if effects[i].Type != "open" {
 			continue
@@ -152,7 +159,7 @@ func RunScript(script string, state *game.States, params map[string]any) ([]Item
 		}
 	}
 
-	// Добавим is_ship для heal (всегда true, раз прошло Apply)
+	// добавим is_ship для heal (всегда true, раз прошло Apply)
 	for i := range effects {
 		if effects[i].Type != "heal" {
 			continue

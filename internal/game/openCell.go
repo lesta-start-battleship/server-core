@@ -1,5 +1,7 @@
 package game
 
+import "errors"
+
 type OpenCellCommand struct {
 	Coords    Coord // - получаем от юзера
 	PrevState CellState
@@ -16,7 +18,7 @@ func (c *OpenCellCommand) Apply(states *States) error {
 	gs := states.EnemyState
 	// проверка валидности координаты
 	if !gs.isInside(c.Coords) {
-		return nil
+		return errors.New("out of bounds")
 	}
 	c.PrevState = gs.Field[c.Coords.X][c.Coords.Y]
 	gs.Field[c.Coords.X][c.Coords.Y].State = Open
