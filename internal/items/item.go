@@ -24,6 +24,8 @@ type Item struct {
 type ItemInput struct {
 	X         int `json:"x"`
 	Y         int `json:"y"`
+	X2        int `json:"x2,omitempty"`
+	Y2        int `json:"y2,omitempty"`
 	Direction int `json:"direction,omitempty"`
 	ItemID    int `json:"item_id"`
 }

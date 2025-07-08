@@ -61,6 +61,8 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 	itemInput := items.ItemInput{
 		X:         wsInput.X,
 		Y:         wsInput.Y,
+		X2:        wsInput.X2,
+		Y2:        wsInput.Y2,
 		Direction: wsInput.Direction,
 		ItemID:    wsInput.ItemID,
 	}

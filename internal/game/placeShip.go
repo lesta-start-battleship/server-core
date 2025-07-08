@@ -140,3 +140,24 @@ func issueID(gs *GameState, ship *Ship) error {
 	}
 	return errors.New("no available ship of this length")
 }
+
+func (gs *GameState) FindShipByCoord(coord Coord) *Ship {
+	cell := gs.Field[coord.X][coord.Y]
+	if cell.ShipID == Empty {
+		return nil
+	}
+	ship := gs.Ships[cell.ShipID]
+	if ship != nil && ship.Contains(coord) {
+		return ship
+	}
+	return nil
+}
+
+func (s *Ship) Contains(coord Coord) bool {
+	_, ok := s.Decks[coord]
+	return ok
+}
+
+func (c *PlaceShipCommand) Ship() *Ship {
+	return c.ship
+}
