@@ -25,6 +25,8 @@ func RunScript(script string, state *game.States, input ItemInput) ([]ItemEffect
 	params := map[string]any{
 		"x":         input.X,
 		"y":         input.Y,
+		"x2":        input.X2,
+		"y2":        input.Y2,
 		"direction": input.Direction,
 		"item_id":   input.ItemID,
 	}
@@ -44,7 +46,7 @@ func RunScript(script string, state *game.States, input ItemInput) ([]ItemEffect
 	var healCmds []*game.HealShipCommand
 	openCmdCount := 0
 
-	resolveIntWithCtx := func(val interface{}, params map[string]any) (int, bool) {
+	resolveIntWithCtx := func(val any, params map[string]any) (int, bool) {
 		return resolveIntWithRand(val, params, &lastRand)
 	}
 
@@ -58,12 +60,41 @@ func RunScript(script string, state *game.States, input ItemInput) ([]ItemEffect
 		effects = append(effects, ItemEffect{Type: effectType, Coords: []game.Coord{coord}})
 	}
 
-	processAction := func(actionName string, args map[string]interface{}) {
+	processAction := func(actionName string, args map[string]any) {
 		x, _ := resolveIntWithCtx(args["x"], params)
 		y, _ := resolveIntWithCtx(args["y"], params)
+		x2, _ := resolveIntWithCtx(args["x2"], params)
+		y2, _ := resolveIntWithCtx(args["y2"], params)
+		direction, _ := resolveIntWithCtx(args["direction"], params)
+
 		coord := game.Coord{X: x, Y: y}
+		to := game.Coord{X: x2, Y: y2}
 
 		switch actionName {
+		case "MOVE":
+			ship := state.PlayerState.FindShipByCoord(coord)
+			if ship == nil {
+				return
+			}
+			bearings := direction != 0
+			// Удаление старого корабля
+			removeCmd := game.NewRemoveShipCommand(coord)
+			tx.Add(removeCmd)
+
+			// Создание нового корабля
+			placeCmd := game.NewPlaceShipCommand(ship.Len, to, bearings)
+
+			// Важно: вручную копируем ID и здоровье
+			placeCmd.Ship().ID = ship.ID
+			placeCmd.Ship().Health = ship.Health
+
+			tx.Add(placeCmd)
+
+			addEffect("remove", coord)
+			for _, c := range placeCmd.GetDeckCoords() {
+				addEffect("move", c)
+			}
+
 		case "OPEN_CELL":
 			if !state.EnemyState.IsInside(x, y) {
 				return
@@ -73,19 +104,6 @@ func RunScript(script string, state *game.States, input ItemInput) ([]ItemEffect
 			openCmds = append(openCmds, cmd)
 			addEffect("open", coord)
 			openCmdCount++
-
-		case "SET_CELL_STATUS":
-			status, _ := args["status"].(string)
-			cmd := &setCellStatusCommand{X: x, Y: y, Status: status}
-			tx.Add(cmd)
-
-		case "REMOVE_SHIP":
-			cmd := game.NewRemoveShipCommand(coord)
-			tx.Add(cmd)
-
-		case "PLACE_SHIP":
-			cmd := game.NewPlaceShipCommand(1, coord, false)
-			tx.Add(cmd)
 
 		case "HEAL_SHIP":
 			cmd := game.NewHealShipCommand(coord)
@@ -318,31 +336,6 @@ func resolveIntToken(token string, params map[string]any) (int, bool) {
 	return 0, false
 }
 
-type setCellStatusCommand struct {
-	X, Y   int
-	Status string
-}
-
-func (c *setCellStatusCommand) Apply(states *game.States) error {
-	gs := states.PlayerState
-	if !gs.IsInside(c.X, c.Y) {
-		return nil
-	}
-	var s int
-	switch c.Status {
-	case "open":
-		s = game.Open
-	case "close":
-		s = game.Close
-	default:
-		s = game.Open
-	}
-	gs.Field[c.X][c.Y].State = s
-	return nil
-}
-
-func (c *setCellStatusCommand) Undo(states *game.States) {}
-
 // resolveInt с поддержкой lastRand и FIELD_SIZE
 func resolveIntWithRand(val interface{}, params map[string]any, lastRand *int) (int, bool) {
 	switch v := val.(type) {
@@ -350,6 +343,11 @@ func resolveIntWithRand(val interface{}, params map[string]any, lastRand *int) (
 		return int(v), true
 	case int:
 		return v, true
+	case bool:
+		if v {
+			return 0, true
+		}
+		return 1, true
 	case string:
 		if v == "FIELD_SIZE" {
 			return 9, true
