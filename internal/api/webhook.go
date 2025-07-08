@@ -14,11 +14,11 @@ import (
 
 func StartMatch(c *gin.Context) {
 	var payload struct {
-		RoomID  string `json:"room_id"`
-		Player1 string `json:"player1"`
-		Player2 string `json:"player2"`
-		Mode    string `json:"mode"`
-		GuildWarID   string `json:"guild_war_id,omitempty"`
+		RoomID     string `json:"room_id"`
+		Player1    string `json:"player1"`
+		Player2    string `json:"player2"`
+		Mode       string `json:"mode"`
+		GuildWarID string `json:"guild_war_id,omitempty"`
 	}
 
 	if err := c.ShouldBindJSON(&payload); err != nil {
@@ -56,7 +56,7 @@ func StartMatch(c *gin.Context) {
 				PlayerState: player1State,
 				EnemyState:  player2State,
 			},
-			Items: itemsPlayer1,
+			Items:     itemsPlayer1,
 			ItemUsage: make(map[items.ItemID]*items.ItemUsageData),
 			MoveCount: 0,
 		},
@@ -66,13 +66,13 @@ func StartMatch(c *gin.Context) {
 				PlayerState: player2State,
 				EnemyState:  player1State,
 			},
-			Items: itemsPlayer2,
+			Items:     itemsPlayer2,
 			ItemUsage: make(map[items.ItemID]*items.ItemUsageData),
 			MoveCount: 0,
 		},
-		Status:    "waiting",
-		CreatedAt: time.Now(),
-		Items:     allItems,
+		Status:     "waiting",
+		CreatedAt:  time.Now(),
+		Items:      allItems,
 		GuildWarID: payload.GuildWarID,
 	}
 
