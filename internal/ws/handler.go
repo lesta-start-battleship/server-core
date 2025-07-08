@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -50,6 +51,13 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 		conn.Close()
 		return
 	}
+
+	// Если это повторное подключение — остановим таймер
+	if player.ReconnectTimer != nil {
+		player.ReconnectTimer.Stop()
+		player.ReconnectTimer = nil
+	}
+	player.Disconnected = false
 	player.Conn = conn
 
 	log.Printf("[WS] Player %s connected to room %s\n", playerID, roomID)
@@ -64,16 +72,16 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 	for {
 		_, msg, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("[WS] Read error:", err)
+			log.Printf("[WS] Read error from %s: %v", playerID, err)
 			break
 		}
 
 		var input wsiface.WSInput
 		decoder := json.NewDecoder(bytes.NewReader(msg))
-		decoder.DisallowUnknownFields() 
+		decoder.DisallowUnknownFields()
 
 		if err = decoder.Decode(&input); err != nil {
-			log.Println("[WS] JSON decode error (invalid fields?):", err)
+			log.Println("[WS] JSON decode error:", err)
 			handlers.SendError(conn, "invalid input format: "+err.Error())
 			continue
 		}
@@ -89,4 +97,23 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 			log.Printf("[WS] Handler error (%s): %v\n", input.Event, err)
 		}
 	}
+
+	// Обработка дисконнекта
+	log.Printf("[WS] Player %s disconnected from room %s\n", playerID, roomID)
+	player.Disconnected = true
+
+	player.ReconnectTimer = time.AfterFunc(120*time.Second, func() {
+		// Игрок так и не переподключился
+		if player.Disconnected {
+			var opponent *match.PlayerConn
+			if player == room.Player1 {
+				opponent = room.Player2
+			} else {
+				opponent = room.Player1
+			}
+			if opponent != nil {
+				room.DeclareVictory(opponent.ID, dispatcher)
+			}
+		}
+	})
 }
