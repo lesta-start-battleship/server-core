@@ -73,20 +73,36 @@ func RunScript(script string, state *game.States, input ItemInput) ([]ItemEffect
 		to := game.Coord{X: x2, Y: y2}
 
 		switch actionName {
+		case "PLACE_SUBMARINE":
+			ship := state.PlayerState.FindShipByCoord(coord)
+			if ship == nil || ship.Len != 3 {
+				return
+			}
+
+			removeCmd := game.NewRemoveShipCommand(coord)
+			tx.Add(removeCmd)
+
+			bearings := ship.Bearings
+
+			placeSubCmd := game.NewPlaceSubmarineCommand(ship.Coords, bearings)
+			tx.Add(placeSubCmd)
+
+			for _, c := range placeSubCmd.GetDeckCoords() {
+				addEffect("place-submarine", c)
+			}
+
 		case "MOVE":
 			ship := state.PlayerState.FindShipByCoord(coord)
 			if ship == nil {
 				return
 			}
 			bearings := direction != 0
-			// Удаление старого корабля
+
 			removeCmd := game.NewRemoveShipCommand(coord)
 			tx.Add(removeCmd)
 
-			// Создание нового корабля
 			placeCmd := game.NewPlaceShipCommand(ship.Len, to, bearings)
 
-			// Важно: вручную копируем ID и здоровье
 			placeCmd.Ship().ID = ship.ID
 			placeCmd.Ship().Health = ship.Health
 

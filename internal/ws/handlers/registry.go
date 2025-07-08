@@ -19,4 +19,5 @@ func RegisterAllHandlers() {
 	RegisterHandler(&ShootHandler{})
 	RegisterHandler(&ReadyHandler{})
 	RegisterHandler(&UseItemHandler{})
+	RegisterHandler(&MoveSubmarineHandler{})
 }

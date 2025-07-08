@@ -60,6 +60,7 @@ func StartMatch(c *gin.Context) {
 			ItemUsage: make(map[items.ItemID]*items.ItemUsageData),
 			MoveCount: 0,
 			ChessFigureCount: 0, // sobitiye tolko dlya chess
+			LastSubmarineTurn: 0,
 		},
 		Player2: &match.PlayerConn{
 			ID: payload.Player2,
@@ -71,6 +72,7 @@ func StartMatch(c *gin.Context) {
 			ItemUsage: make(map[items.ItemID]*items.ItemUsageData),
 			MoveCount: 0,
 			ChessFigureCount: 0, // sobitiye tolko dlya chess
+			LastSubmarineTurn: 0,
 		},
 		Status:     "waiting",
 		CreatedAt:  time.Now(),
