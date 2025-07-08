@@ -120,3 +120,28 @@ func NewError(senderId string, message string) Packet {
 	body := &Error{Message: message}
 	return Packet{SenderId: senderId, Type: body.Type(), Body: body}
 }
+
+// x2, y2 and x3, y3 depend on item
+func NewUseItem(senderId string, itemID, x, y int, x2, y2, x3, y3, direction int) Packet {
+	body := &UseItem{
+		ItemID:    itemID,
+		X:         x,
+		Y:         y,
+		X2:        x2,
+		Y2:        y2,
+		X3:        x3,
+		Y3:        y3,
+		Direction: direction,
+	}
+	return Packet{SenderId: senderId, Type: body.Type(), Body: body}
+}
+
+func NewItemUsed(senderId string, itemID int, name string, by string, effects []ItemEffect) Packet {
+	body := &ItemUsed{
+		ItemID:  itemID,
+		Name:    name,
+		By:      by,
+		Effects: effects,
+	}
+	return Packet{SenderId: senderId, Type: body.Type(), Body: body}
+}

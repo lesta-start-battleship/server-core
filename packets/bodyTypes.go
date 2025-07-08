@@ -12,6 +12,8 @@ var packetBodyTypes = []PacketBody{
 	(*GameStart)(nil),
 	(*GameEnd)(nil),
 	(*Error)(nil),
+	(*UseItem)(nil),
+	(*ItemUsed)(nil),
 }
 
 type PlaceShip struct {
@@ -95,3 +97,27 @@ type Error struct {
 
 func (Error) Type() string  { return "error" }
 func (Error) isPacketBody() {}
+
+type UseItem struct {
+	ItemID    int `json:"item_id"`
+	X         int `json:"x"`
+	Y         int `json:"y"`
+	X2        int `json:"x2,omitempty"`
+	Y2        int `json:"y2,omitempty"`
+	X3        int `json:"x3,omitempty"`
+	Y3        int `json:"y3,omitempty"`
+	Direction int `json:"direction,omitempty"`
+}
+
+func (UseItem) Type() string  { return "use_item" }
+func (UseItem) isPacketBody() {}
+
+type ItemUsed struct {
+	ItemID  int          `json:"item_id"`
+	Name    string       `json:"name"`
+	By      string       `json:"by"`
+	Effects []ItemEffect `json:"effects"`
+}
+
+func (ItemUsed) Type() string  { return "item_used" }
+func (ItemUsed) isPacketBody() {}

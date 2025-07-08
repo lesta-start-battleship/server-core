@@ -13,3 +13,8 @@ type Ship struct {
 	Health   int     `json:"health,omitempty"`
 	Decks    []Coord `json:"decks,omitempty"`
 }
+
+type ItemEffect struct {
+	Type   string  `json:"type"`
+	Coords []Coord `json:"coords"`
+}
