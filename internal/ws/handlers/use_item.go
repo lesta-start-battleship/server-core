@@ -58,7 +58,14 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 		return SendError(ctx.Conn, "item on cooldown, wait more turns: "+fmt.Sprint(waitTurns))
 	}
 
-	effect, err := items.RunScript(itemData.Script, ctx.Player.States, wsInput.Params)
+	itemInput := items.ItemInput{
+		X:         wsInput.X,
+		Y:         wsInput.Y,
+		Direction: wsInput.Direction,
+		ItemID:    wsInput.ItemID,
+	}
+
+	effect, err := items.RunScript(itemData.Script, ctx.Player.States, itemInput)
 	if err != nil {
 		return SendError(ctx.Conn, err.Error())
 	}

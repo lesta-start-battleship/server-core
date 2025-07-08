@@ -21,6 +21,13 @@ type Item struct {
 	Cooldown    int    `json:"cooldown"`
 }
 
+type ItemInput struct {
+	X         int `json:"x"`
+	Y         int `json:"y"`
+	Direction int `json:"direction,omitempty"`
+	ItemID    int `json:"item_id"`
+}
+
 type ItemUsageData struct {
 	UsedTimes    int
 	LastUsedTurn int

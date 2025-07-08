@@ -23,12 +23,12 @@ const (
 
 // TODO: нужно подумать про инпут предметов
 type WSInput struct {
-	Event  string         `json:"event"`
-	Ship   *game.Ship     `json:"ship,omitempty"`
-	X      int            `json:"x,omitempty"`
-	Y      int            `json:"y,omitempty"`
-	ItemID int            `json:"item_id,omitempty"`
-	Params map[string]any `json:"params,omitempty"`
+	Event     string         `json:"event"`
+	Ship      *game.Ship     `json:"ship,omitempty"`
+	X         int            `json:"x"`
+	Y         int            `json:"y"`
+	ItemID    int            `json:"item_id,omitempty"`
+	Direction int            `json:"direction,omitempty"`
 }
 
 type WSResponse struct {

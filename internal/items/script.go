@@ -17,9 +17,16 @@ type Action struct {
 	Args map[string]interface{}
 }
 
-func RunScript(script string, state *game.States, params map[string]any) ([]ItemEffect, error) {
+func RunScript(script string, state *game.States, input ItemInput) ([]ItemEffect, error) {
 	if script == "" {
 		return nil, nil
+	}
+
+	params := map[string]any{
+		"x":         input.X,
+		"y":         input.Y,
+		"direction": input.Direction,
+		"item_id":   input.ItemID,
 	}
 
 	var scriptObj struct {
