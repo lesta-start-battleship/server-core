@@ -57,6 +57,8 @@ func StartMatch(c *gin.Context) {
 				EnemyState:  player2State,
 			},
 			Items: itemsPlayer1,
+			ItemUsage: make(map[items.ItemID]*items.ItemUsageData),
+			MoveCount: 0,
 		},
 		Player2: &match.PlayerConn{
 			ID: payload.Player2,
@@ -65,6 +67,8 @@ func StartMatch(c *gin.Context) {
 				EnemyState:  player1State,
 			},
 			Items: itemsPlayer2,
+			ItemUsage: make(map[items.ItemID]*items.ItemUsageData),
+			MoveCount: 0,
 		},
 		Status:    "waiting",
 		CreatedAt: time.Now(),

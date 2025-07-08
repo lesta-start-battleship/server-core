@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/lesta-battleship/server-core/internal/event"
@@ -35,22 +36,38 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 	if ctx.Player.Items[itemID] <= 0 {
 		return SendError(ctx.Conn, "item not available")
 	}
-	log.Println("item dostupen")
 
 	itemData, ok := ctx.Room.Items[itemID]
 	if !ok {
 		return SendError(ctx.Conn, "item metadata not found")
 	}
-	log.Println("nashli iz obshey kollekcii")
+
+	// чекаем Cooldown и UseLimit
+	usage := ctx.Player.ItemUsage[itemID]
+	if usage == nil {
+		usage = &items.ItemUsageData{}
+		ctx.Player.ItemUsage[itemID] = usage
+	}
+
+	if itemData.UseLimit > 0 && usage.UsedTimes >= itemData.UseLimit {
+		return SendError(ctx.Conn, "item use limit reached")
+	}
+
+	if itemData.Cooldown > 0 && (ctx.Player.MoveCount-usage.LastUsedTurn) < itemData.Cooldown {
+		waitTurns := itemData.Cooldown - (ctx.Player.MoveCount - usage.LastUsedTurn)
+		return SendError(ctx.Conn, "item on cooldown, wait more turns: "+fmt.Sprint(waitTurns))
+	}
 
 	effect, err := items.RunScript(itemData.Script, ctx.Player.States, wsInput.Params)
 	if err != nil {
-		log.Printf("[WS] RunScript error: %v", err)
 		return SendError(ctx.Conn, err.Error())
 	}
-	log.Println("RunScript completed")
 
 	ctx.Player.Items[itemID]--
+	usage.UsedTimes++
+	usage.LastUsedTurn = ctx.Player.MoveCount
+
+	ctx.Player.MoveCount++
 
 	if err := ctx.Dispatcher.DispatchUsedItem(event.Item{
 		PlayerID: ctx.Player.ID,
@@ -58,11 +75,10 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 	}); err != nil {
 		log.Printf("[KAFKA] Failed to dispatch used item: %v", err)
 	}
-
 	return Broadcast(ctx.Room, wsiface.EventItemUsed, wsiface.ItemUsedResponse{
-		ItemID: itemID,
-		Name:   itemData.Name,
-		By:     ctx.Player.ID,
+		ItemID:  itemID,
+		Name:    itemData.Name,
+		By:      ctx.Player.ID,
 		Effects: effect,
 	})
 }

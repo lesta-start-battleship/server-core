@@ -12,6 +12,11 @@ import (
 	"github.com/lesta-battleship/server-core/internal/transaction"
 )
 
+type Action struct {
+	Name string
+	Args map[string]interface{}
+}
+
 func RunScript(script string, state *game.States, params map[string]any) ([]ItemEffect, error) {
 	if script == "" {
 		return nil, nil

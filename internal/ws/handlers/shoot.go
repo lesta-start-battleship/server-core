@@ -42,10 +42,11 @@ func (h *ShootHandler) Handle(input any, ctx *wsiface.Context) error {
 		target = ctx.Room.Player1
 	}
 
-	targetCell := target.States.PlayerState.Field[wsInput.X][wsInput.Y]
-	if targetCell.State == game.Open {
-		return SendError(ctx.Conn, "you already shot at this cell")
-	}
+	// не работает с опен селл, т.е. не дает выстрелить еще раз
+	// targetCell := target.States.PlayerState.Field[wsInput.X][wsInput.Y]
+	// if targetCell.State == game.Open {
+	// 	return SendError(ctx.Conn, "you already shot at this cell")
+	// }
 
 	cmd := game.NewShootCommand(game.Coord{X: wsInput.X, Y: wsInput.Y})
 	tx := transaction.NewTransaction()
@@ -165,6 +166,7 @@ func (h *ShootHandler) Handle(input any, ctx *wsiface.Context) error {
 		match.Rooms.Delete(ctx.Room.RoomID)
 	} else {
 		ctx.Room.Turn = target.ID
+		ctx.Player.MoveCount++
 	}
 
 	return nil

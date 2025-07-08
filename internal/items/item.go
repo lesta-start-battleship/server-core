@@ -21,24 +21,18 @@ type Item struct {
 	Cooldown    int    `json:"cooldown"`
 }
 
+type ItemUsageData struct {
+	UsedTimes    int
+	LastUsedTurn int
+}
+
 type ItemEffect struct {
 	Type   string       `json:"type"` // "open", "heal", "shoot" и так далее карочи, заеб
 	Coords []game.Coord `json:"coords"`
 }
 
-// юзлес функция, не нужна
-// func UseItem(id ItemID, state *game.States, itemsList map[ItemID]*Item, params map[string]any) ([]ItemEffect, error) {
-// 	item, ok := itemsList[id]
-// 	if !ok {
-// 		return nil, fmt.Errorf("item with id %d not found", id)
-// 	}
-
-// 	return RunScript(item.Script, state, params)
-// }
-
-// нам нужен в мааап
 func GetAllItems() (map[ItemID]*Item, error) {
-	resp, err := http.Get(config.InventoryServiceURL + "/items/")
+	resp, err := http.Get(config.GetAllItemsURL)
 	if err != nil {
 		return nil, err
 	}
@@ -59,7 +53,7 @@ func GetAllItems() (map[ItemID]*Item, error) {
 }
 
 func GetUserItems(userJWT string) (map[ItemID]int, error) {
-	url := config.InventoryServiceURL + "/inventory/user_inventory"
+	url := config.GetAllUserItemsURl
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {
 		return nil, err

@@ -9,12 +9,13 @@ import (
 )
 
 var (
-	Port                string
-	KafkaBrokers        []string
-	TopicsToSend        []string
-	MatchResults        string
-	UsedItems           string
-	InventoryServiceURL string
+	Port               string
+	KafkaBrokers       []string
+	TopicsToSend       []string
+	MatchResults       string
+	UsedItems          string
+	GetAllItemsURL     string
+	GetAllUserItemsURl string
 )
 
 func init() {
@@ -44,8 +45,13 @@ func init() {
 		log.Fatal("USED_ITEMS not set")
 	}
 
-	InventoryServiceURL = os.Getenv("INVENTORY_SERVICE_URL")
-	if UsedItems == "" {
+	GetAllItemsURL = os.Getenv("INVENTORY_SERVICE_GET_ALL_ITEMS")
+	if GetAllItemsURL == "" {
+		log.Fatal("INVENTORY_SERVICE_URL not set")
+	}
+
+	GetAllUserItemsURl = os.Getenv("INVENTORY_SERVICE_GET_USER_ITEMS")
+	if GetAllUserItemsURl == "" {
 		log.Fatal("INVENTORY_SERVICE_URL not set")
 	}
 
