@@ -58,6 +58,14 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 		return SendError(ctx.Conn, "item on cooldown, wait more turns: "+fmt.Sprint(waitTurns))
 	}
 
+	if itemData.Name == "Конь" || itemData.Name == "Ладья" || itemData.Name == "Ферзь" || itemData.Name == "Слон" {
+		ctx.Player.ChessFigureCount++
+	}
+
+	if ctx.Player.ChessFigureCount > 2 {
+		return SendError(ctx.Conn, "chess figure use limit reached")
+	}
+
 	itemInput := items.ItemInput{
 		X:         wsInput.X,
 		Y:         wsInput.Y,

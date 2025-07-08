@@ -11,13 +11,14 @@ import (
 )
 
 type PlayerConn struct {
-	ID        string
-	Ready     bool
-	States    *game.States // ВАЖНО чтобы при создании GameRoom было создано всего 2 GameState, а не 4
-	Conn      *websocket.Conn
-	Items     map[items.ItemID]int                  // хранит количество предметов у юзера
-	ItemUsage map[items.ItemID]*items.ItemUsageData // хранит сколько раз использовался предмет, тоже для cd и limita
-	MoveCount int                                   // сколько раз игрок ходил (используется для cd)
+	ID               string
+	Ready            bool
+	States           *game.States // ВАЖНО чтобы при создании GameRoom было создано всего 2 GameState, а не 4
+	Conn             *websocket.Conn
+	Items            map[items.ItemID]int                  // хранит количество предметов у юзера
+	ItemUsage        map[items.ItemID]*items.ItemUsageData // хранит сколько раз использовался предмет, тоже для cd и limita
+	MoveCount        int                                   // сколько раз игрок ходил (используется для cd)
+	ChessFigureCount int                                   // нужно чтобы использование шахматных фигур не было > 2 (sobitiye tolko dlya chess)
 }
 
 type GameRoom struct {
