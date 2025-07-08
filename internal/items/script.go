@@ -27,6 +27,8 @@ func RunScript(script string, state *game.States, input ItemInput) ([]ItemEffect
 		"y":         input.Y,
 		"x2":        input.X2,
 		"y2":        input.Y2,
+		"x3":        input.X3,
+		"y3":        input.Y3,
 		"direction": input.Direction,
 		"item_id":   input.ItemID,
 	}
