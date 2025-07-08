@@ -130,7 +130,7 @@ func issueID(gs *GameState, ship *Ship) error {
 				return nil
 			}
 		}
-	case Submarine:
+	case Aerocarrier:
 		if gs.Ships[10] == nil {
 			ship.ID = 10
 			return nil

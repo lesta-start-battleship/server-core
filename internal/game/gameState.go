@@ -8,6 +8,7 @@ const (
 	Horizontal bool = false
 	Hit        bool = true
 	Whole      bool = false
+
 )
 
 type Coord struct {
@@ -45,12 +46,13 @@ const (
 	Battleship int = 1
 	Cruiser    int = 2
 	Destroyer  int = 3
-	Submarine  int = 4
+	Aerocarrier  int = 4 
+	Submarine  int = 11
 )
 
 func NewGameState() *GameState {
 	return &GameState{
-		Ships: make([]*Ship, 11),
+		Ships: make([]*Ship, 12),
 	}
 }
 

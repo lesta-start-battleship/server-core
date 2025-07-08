@@ -23,7 +23,7 @@ func (c *OpenCellCommand) Apply(states *States) error {
 	c.PrevState = gs.Field[c.Coords.X][c.Coords.Y]
 	gs.Field[c.Coords.X][c.Coords.Y].State = Open
 
-	if c.PrevState.ShipID != Empty {
+	if c.PrevState.ShipID != Empty && c.PrevState.ShipID != Submarine {
 		c.ShipFound = true
 	}
 	return nil
@@ -31,8 +31,5 @@ func (c *OpenCellCommand) Apply(states *States) error {
 
 func (c *OpenCellCommand) Undo(states *States) {
 	gs := states.EnemyState
-	if !gs.isInside(c.Coords) {
-		return
-	}
 	gs.Field[c.Coords.X][c.Coords.Y] = c.PrevState
 }
