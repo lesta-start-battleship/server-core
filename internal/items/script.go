@@ -31,8 +31,6 @@ func RunScript(script string, state *game.States, input ItemInput) ([]ItemEffect
 		"item_id":   input.ItemID,
 	}
 
-	fmt.Printf("[RunScript] input params: %+v\n", params)
-
 	var scriptObj struct {
 		Input   string        `json:"input"`
 		Actions []interface{} `json:"actions"`
@@ -63,13 +61,11 @@ func RunScript(script string, state *game.States, input ItemInput) ([]ItemEffect
 	}
 
 	processAction := func(actionName string, args map[string]any) {
-		fmt.Printf("[MOVE] raw args: x=%v, y=%v, x2=%v, y2=%v, dir=%v\n", args["x"], args["y"], args["x2"], args["y2"], args["direction"])
 		x, _ := resolveIntWithCtx(args["x"], params)
 		y, _ := resolveIntWithCtx(args["y"], params)
 		x2, _ := resolveIntWithCtx(args["x2"], params)
 		y2, _ := resolveIntWithCtx(args["y2"], params)
 		direction, _ := resolveIntWithCtx(args["direction"], params)
-		fmt.Printf("[MOVE] resolved: x=%d, y=%d, x2=%d, y2=%d\n, direction=%d\n", x, y, x2, y2, direction)
 
 		coord := game.Coord{X: x, Y: y}
 		to := game.Coord{X: x2, Y: y2}
