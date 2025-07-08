@@ -21,7 +21,6 @@ const (
 	EventError = "event_error"
 )
 
-// TODO: нужно подумать про инпут предметов
 type WSInput struct {
 	Event string     `json:"event"`
 	Ship  *game.Ship `json:"ship,omitempty"`
@@ -69,7 +68,6 @@ type GameEndResponse struct {
 	Winner string `json:"winner"`
 }
 
-// TODO: нужно подумать про респонс айтемов
 type ItemUsedResponse struct {
 	ItemID  items.ItemID       `json:"item_id"`
 	Name    string             `json:"name"`
