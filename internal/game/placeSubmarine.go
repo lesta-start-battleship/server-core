@@ -8,14 +8,14 @@ type PlaceSubmarineCommand struct {
 	ship *Ship
 }
 
-func NewPlaceSubmarineCommand(len int, coord Coord, bearings bool) *PlaceSubmarineCommand {
+func NewPlaceSubmarineCommand(coord Coord, bearings bool) *PlaceSubmarineCommand {
 	return &PlaceSubmarineCommand{
 		ship: &Ship{
 			ID: 11,
-			Len:      len,
+			Len:      3,
 			Coords:   coord,
 			Bearings: bearings,
-			Health:   len,
+			Health:   3,
 			Decks:    make(map[Coord]bool),
 		},
 	}
