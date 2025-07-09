@@ -25,10 +25,10 @@ type PlayerConn struct {
 	LastSubmarineTurn int
 	Disconnected      bool
 	ReconnectTimer    *time.Timer
-	Rating			  int
-	Experience 		  int
-	AccessToken 	  string // token пользователя
-	Login 			  string // login пользователя
+	Rating            int
+	Experience        int
+	AccessToken       string // token пользователя
+	Login             string // login пользователя
 }
 
 type GameRoom struct {
@@ -86,8 +86,9 @@ func (r *GameRoom) DeclareVictory(winnerID string, dispatcher *event.MatchEventD
 
 	switch r.Mode {
 	case "ranked":
+		winGain, loserGain := GetRatingGain(winner.Rating, loser.Rating)
 		matchResult.Experience = &event.Experience{WinnerGain: 30, LoserGain: 15}
-		matchResult.Rating = &event.Rating{WinnerGain: 30, LoserGain: -15}
+		matchResult.Rating = &event.Rating{WinnerGain: winGain, LoserGain: loserGain}
 	case "random":
 		matchResult.Experience = &event.Experience{WinnerGain: 30, LoserGain: 15}
 	case "guild_war_match":

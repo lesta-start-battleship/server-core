@@ -6,7 +6,6 @@ import (
 	"github.com/lesta-battleship/server-core/internal/event"
 	"github.com/lesta-battleship/server-core/internal/game"
 	"github.com/lesta-battleship/server-core/internal/match"
-	"github.com/lesta-battleship/server-core/internal/stat"
 	"github.com/lesta-battleship/server-core/internal/transaction"
 	"github.com/lesta-battleship/server-core/internal/wsiface"
 )
@@ -94,7 +93,7 @@ func (h *ShootHandler) Handle(input any, ctx *wsiface.Context) error {
 		var matchResult event.MatchResult
 
 		if ctx.Room.Mode == "ranked" {
-			winGain, loserGain := stat.GetRatingGain(ctx.Player.Rating, target.Rating)
+			winGain, loserGain := match.GetRatingGain(ctx.Player.Rating, target.Rating)
 			matchResult = event.MatchResult{
 				WinnerID:  ctx.Player.ID,
 				LoserID:   target.ID,
