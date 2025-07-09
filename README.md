@@ -1,4 +1,5 @@
 # Server core
+[![Tests](https://github.com/lesta-start-battleship/server-core/actions/workflows/ci.yml/badge.svg)](https://github.com/lesta-start-battleship/server-core/actions/workflows/ci.yml)
 
 Это сервис, реализующий серверную логику для многопользовательской игры в морской бой. Отличительной особенностью является поддержка создания новых предметов на стороне сервиса инвентаря предоставленным метаязыком.
 
