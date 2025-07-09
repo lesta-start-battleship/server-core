@@ -70,7 +70,9 @@ func GetUserItems(userJWT string) (map[ItemID]int, error) {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+userJWT)
+	// req.Header.Set("Authorization", "Bearer "+userJWT)
+	req.Header.Set("Authorization", userJWT)
+	
 	resp, err := http.DefaultClient.Do(req)
 	if err != nil {
 		return nil, err

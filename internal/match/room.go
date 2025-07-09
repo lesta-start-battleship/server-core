@@ -25,6 +25,10 @@ type PlayerConn struct {
 	LastSubmarineTurn int
 	Disconnected      bool
 	ReconnectTimer    *time.Timer
+	Rating			  int
+	Experience 		  int
+	AccessToken 	  string // token пользователя
+	Login 			  string // login пользователя
 }
 
 type GameRoom struct {

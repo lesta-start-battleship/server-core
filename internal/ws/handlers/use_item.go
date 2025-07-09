@@ -1,12 +1,17 @@
 package handlers
 
 import (
+	"errors"
 	"fmt"
 	"log"
 
 	"github.com/lesta-battleship/server-core/internal/event"
 	"github.com/lesta-battleship/server-core/internal/items"
 	"github.com/lesta-battleship/server-core/internal/wsiface"
+
+	"bytes"
+	"encoding/json"
+	"net/http"
 )
 
 type UseItemHandler struct{}
@@ -94,6 +99,45 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 	}); err != nil {
 		log.Printf("[KAFKA] Failed to dispatch used item: %v", err)
 	}
+
+
+	// сообщить об использовании предмета
+	// ----------------------------------
+	url := "https://???/inventory/use_item" // TODO: куда обращаемся?
+
+	
+	requestBody := map[string]any{
+		"item_id": wsInput.ItemID,
+		"amount":  1,
+	}
+
+	jsonBody, err := json.Marshal(requestBody)
+	if err != nil {
+		return err
+	}
+
+	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonBody))
+	if err != nil {
+		return err
+	}
+
+	req.Header.Set("Content-Type", "application/json")
+	req.Header.Set("Authorization", ctx.Player.AccessToken) // TODO: нас пошлют когда токен перестанет быть валидным, мб стоит попросить юзера нам перепослать токен
+
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		return err
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode <= 200 || resp.StatusCode > 300 {
+		// Запрос не прошел
+		return errors.New("item use confirmation error")
+	}
+
+	// ----------------------------------
+
 	return Broadcast(ctx.Room, wsiface.EventItemUsed, wsiface.ItemUsedResponse{
 		ItemID:  itemID,
 		Name:    itemData.Name,

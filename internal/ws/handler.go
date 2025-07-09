@@ -11,7 +11,9 @@ import (
 	"github.com/gorilla/websocket"
 
 	"github.com/lesta-battleship/server-core/internal/event"
+	"github.com/lesta-battleship/server-core/internal/items"
 	"github.com/lesta-battleship/server-core/internal/match"
+	"github.com/lesta-battleship/server-core/internal/stat"
 	"github.com/lesta-battleship/server-core/internal/ws/handlers"
 
 	"github.com/lesta-battleship/server-core/internal/wsiface"
@@ -23,7 +25,23 @@ var upgrader = websocket.Upgrader{
 
 func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 	roomID := c.Query("room_id")
-	playerID := c.Query("player_id")
+	// playerID := c.Query("player_id") // юзер сам вводит? го просто из токена брать буду
+	rawPlayerID, exists := c.Get("player_id") // го так
+	if !exists {
+			c.JSON(500, gin.H{"error": "JWT payload not found"})
+			return
+		}
+	playerID := rawPlayerID.(string)
+	auth_header, exists := c.Get("auth_header")
+	if !exists {
+			c.JSON(500, gin.H{"error": "JWT payload not found"})
+			return
+	}
+	login, exists := c.Get("login")
+	if !exists {
+			c.JSON(500, gin.H{"error": "JWT payload not found"})
+			return
+	}
 
 	rawRoom, ok := match.Rooms.Load(roomID)
 	if !ok {
@@ -59,6 +77,26 @@ func WebSocketHandler(c *gin.Context, dispatcher *event.MatchEventDispatcher) {
 	}
 	player.Disconnected = false
 	player.Conn = conn
+
+	
+	// выгрузить инвентарь
+	itemsPlayer, err := items.GetUserItems(auth_header.(string))
+	if err != nil {
+		log.Printf("error fetching number of items for player1 %v", err)
+	}
+	player.Items = itemsPlayer
+	// сохранить токен
+	player.AccessToken = auth_header.(string)
+	
+	// выгрузить опыт и рейтинг
+	rating, err := stat.RequestRating(player)
+	if err != nil {
+		// TODO: видимо мы должны упасть, но я не уверен 
+	}
+	player.Rating = rating
+	// запомнить логин
+	player.Login = login.(string)
+
 
 	log.Printf("[WS] Player %s connected to room %s\n", playerID, roomID)
 

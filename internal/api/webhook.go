@@ -25,19 +25,11 @@ func StartMatch(c *gin.Context) {
 		c.JSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
+	
 	// testoviy token (admina), ispolzuyem inventar odnogo usera na 2
-	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiYWRtaW4ifQ.JzhxV6sJhyTWgr4F-_EeDHg3-urRQiZUWYU9EvMZNHU"
+	// token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VyX2lkIjoxLCJyb2xlIjoiYWRtaW4ifQ.JzhxV6sJhyTWgr4F-_EeDHg3-urRQiZUWYU9EvMZNHU"
+	
 
-	itemsPlayer1, err := items.GetUserItems(token)
-	if err != nil {
-		log.Printf("error fetching number of items for player1 %v", err)
-	}
-
-	itemsPlayer2, err := items.GetUserItems(token)
-	if err != nil {
-		log.Printf("error fetching number of items for player2 %v", err)
-	}
 
 	allItems, err := items.GetAllItems()
 	if err != nil {
@@ -56,7 +48,7 @@ func StartMatch(c *gin.Context) {
 				PlayerState: player1State,
 				EnemyState:  player2State,
 			},
-			Items:     itemsPlayer1,
+			// Items:     itemsPlayer1, // перенес в handler.go
 			ItemUsage: make(map[items.ItemID]*items.ItemUsageData),
 			MoveCount: 0,
 			ChessFigureCount: 0, // sobitiye tolko dlya chess
@@ -68,7 +60,7 @@ func StartMatch(c *gin.Context) {
 				PlayerState: player2State,
 				EnemyState:  player1State,
 			},
-			Items:     itemsPlayer2,
+			// Items:     itemsPlayer2, // перенес в handler.go
 			ItemUsage: make(map[items.ItemID]*items.ItemUsageData),
 			MoveCount: 0,
 			ChessFigureCount: 0, // sobitiye tolko dlya chess
