@@ -1,15 +1,58 @@
 package match
 
 import (
+	// "encoding/json"
+	// "fmt"
 	"math"
+	// "net/http"
+	// "net/url"
+	// "time"
 )
 
-func RequestRating(player *PlayerConn) (int, error) {
-	// TODO, написать обращение к сервису статистики, чтобы получить рейтинг
-	// сейчас он фулово лежит на любые команды поиска, так что не понимаю как тестить
+type userListResponse struct {
+	Results []struct {
+		ID     string `json:"id"`
+		Rating int    `json:"rating"`
+	} `json:"results"`
+}
 
-	// В player лежит id, login и токен пользователя -- добавил все, так как хз что конкретно понадобится
+// poka serv u nix ne rabotayet, tak chto otdayem customniye reytingi
+func RequestRating(player *PlayerConn) (int, error) {
 	return 1500, nil
+
+	// endpoint := "http://37.9.53.248:8000/users/"
+	// client := &http.Client{Timeout: 5 * time.Second}
+
+	// params := url.Values{}
+	// params.Add("ids", player.ID)
+
+	// req, err := http.NewRequest("GET", endpoint+"?"+params.Encode(), nil)
+	// if err != nil {
+	// 	return 0, fmt.Errorf("creating request: %w", err)
+	// }
+
+	// req.Header.Set("Authorization", player.AccessToken)
+
+	// resp, err := client.Do(req)
+	// if err != nil {
+	// 	return 0, fmt.Errorf("sending request: %w", err)
+	// }
+	// defer resp.Body.Close()
+
+	// if resp.StatusCode != 200 {
+	// 	return 0, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
+	// }
+
+	// var parsed userListResponse
+	// if err := json.NewDecoder(resp.Body).Decode(&parsed); err != nil {
+	// 	return 0, fmt.Errorf("decoding response: %w", err)
+	// }
+
+	// if len(parsed.Results) == 0 {
+	// 	return 0, fmt.Errorf("user not found")
+	// }
+
+	// return parsed.Results[0].Rating, nil
 }
 
 func GetRatingGain(ratingWinner, ratingLoser int) (int, int) {
