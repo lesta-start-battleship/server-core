@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"errors"
 	"fmt"
 	"log"
 
@@ -100,7 +99,18 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 	}); err != nil {
 		log.Printf("[KAFKA] Failed to dispatch used item: %v", err)
 	}
+	go ForDolbaebi(wsInput, ctx)
+	
+	return Broadcast(ctx.Room, wsiface.EventItemUsed, wsiface.ItemUsedResponse{
+		ItemID:  itemID,
+		Name:    itemData.Name,
+		By:      ctx.Player.ID,
+		Effects: effect,
+	})
+}
 
+
+func ForDolbaebi(wsInput wsiface.WSInput, ctx *wsiface.Context) {
 	// сообщить об использовании предмета еще бл раз, ну вот зачем им делать ручку и говорить что должен все это делать серв кор, когда есть брокер??????? (за 10 часов до сдачи)
 	// в итоге получился вот такой говнокод)
 	// ----------------------------------
@@ -113,12 +123,12 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 
 	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
-		return err
+		return 
 	}
 
 	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return err
+		return 
 	}
 
 	req.Header.Set("Content-Type", "application/json")
@@ -127,21 +137,14 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return err
+		return 
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode <= 200 || resp.StatusCode > 300 {
-		// Запрос не прошел
-		return errors.New("item use confirmation error")
+		return 
 	}
 
 	// ----------------------------------
 
-	return Broadcast(ctx.Room, wsiface.EventItemUsed, wsiface.ItemUsedResponse{
-		ItemID:  itemID,
-		Name:    itemData.Name,
-		By:      ctx.Player.ID,
-		Effects: effect,
-	})
 }
