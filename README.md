@@ -1,6 +1,6 @@
 # Server core
 
-Это сервис, реализующий серверную логику для многопользовательской игры с поддержкой транзакций, событий, WebSocket и Kafka.
+Это сервис, реализующий серверную логику для многопользовательской игры в морской бой. Отличительной особенностью является поддержка создания новых предметов на стороне сервиса инвентаря предоставленным метаязыком.
 
 ## Структура проекта
 
@@ -30,8 +30,6 @@
 
 ## Запуск
 
-Для запуска необходим валидный `.env`
-
 ```bash
 # Клонируйте репозиторий
 git clone https://github.com/lesta-start-battleship/server-core.git
@@ -39,34 +37,15 @@ git clone https://github.com/lesta-start-battleship/server-core.git
 # Перейдите в папку с проектом
 cd server-core
 
+# генерация env файла
+make env
+
 # Запустите проект с помощью Docker
-docker-compose up --build -d
+make build
 ```
 
 После запуска приложение будет доступно по адресу: [http://localhost:8080](http://localhost8080)
 
-## Конфигурация
-
-Указывается в `.env`
-
-Пример `.env`:
-
-```
-# Port where game-core runs
-GAME_CORE_PORT=8080
-
-# Broker ips
-KAFKA_BROKERS=37.9.53.228:9092
-
-# Topics to send
-USED_ITEMS=prod.inventory.fact.used-items.v1
-MATCH_RESULTS=prod.game.fact.match-results.v1
-
-# Base api url of invetary service
-INVENTORY_SERVICE_GET_ALL_ITEMS=http://37.9.53.107/items/
-INVENTORY_SERVICE_GET_USER_ITEMS=http://37.9.53.107/inventory/user_inventory
-INVENTORY_SERVICE_USE_ITEM=http://37.9.53.107/inventory/use_item
-```
 
 ## Зависимости
 
