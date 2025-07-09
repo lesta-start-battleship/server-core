@@ -16,6 +16,7 @@ var (
 	UsedItems          string
 	GetAllItemsURL     string
 	GetAllUserItemsURl string
+	InventoryUseItem   string
 )
 
 func init() {
@@ -53,6 +54,11 @@ func init() {
 	GetAllUserItemsURl = os.Getenv("INVENTORY_SERVICE_GET_USER_ITEMS")
 	if GetAllUserItemsURl == "" {
 		log.Fatal("INVENTORY_SERVICE_URL not set")
+	}
+
+	InventoryUseItem = os.Getenv("INVENTORY_SERVICE_USE_ITEM")
+	if GetAllUserItemsURl == "" {
+		log.Fatal("INVENTORY_SERVICE_USE_ITEM not set")
 	}
 
 	TopicsToSend = []string{MatchResults, UsedItems}

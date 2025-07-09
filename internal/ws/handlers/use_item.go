@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 
+	"github.com/lesta-battleship/server-core/internal/config"
 	"github.com/lesta-battleship/server-core/internal/event"
 	"github.com/lesta-battleship/server-core/internal/items"
 	"github.com/lesta-battleship/server-core/internal/wsiface"
@@ -100,12 +101,11 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 		log.Printf("[KAFKA] Failed to dispatch used item: %v", err)
 	}
 
-
-	// сообщить об использовании предмета
+	// сообщить об использовании предмета еще бл раз, ну вот зачем им делать ручку и говорить что должен все это делать серв кор, когда есть брокер??????? (за 10 часов до сдачи)
+	// в итоге получился вот такой говнокод)
 	// ----------------------------------
-	url := "https://???/inventory/use_item" // TODO: куда обращаемся?
+	url := config.InventoryUseItem
 
-	
 	requestBody := map[string]any{
 		"item_id": wsInput.ItemID,
 		"amount":  1,
