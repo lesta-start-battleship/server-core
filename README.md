@@ -68,3 +68,6 @@ Go, Docker, Kafka, WebSocket, Prometheus, Grafana
 
 Grafana:    http://localhost:3000/
 Prometheus: http://localhost:9090/
+
+## Тестирование
+[Тут](docs/gameTestReport.md) описаны тест-кейсы для функций ядра игры.
