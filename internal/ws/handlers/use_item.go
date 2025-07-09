@@ -99,8 +99,8 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 	}); err != nil {
 		log.Printf("[KAFKA] Failed to dispatch used item: %v", err)
 	}
-	go ForDolbaebi(wsInput, ctx)
-	
+	go ForTestInventoryTheyDidNotMakeConsumerWeWillDeleteThisFuncLater(wsInput, ctx)
+
 	return Broadcast(ctx.Room, wsiface.EventItemUsed, wsiface.ItemUsedResponse{
 		ItemID:  itemID,
 		Name:    itemData.Name,
@@ -109,8 +109,7 @@ func (h *UseItemHandler) Handle(input any, ctx *wsiface.Context) error {
 	})
 }
 
-
-func ForDolbaebi(wsInput wsiface.WSInput, ctx *wsiface.Context) {
+func ForTestInventoryTheyDidNotMakeConsumerWeWillDeleteThisFuncLater(wsInput wsiface.WSInput, ctx *wsiface.Context) {
 	// сообщить об использовании предмета еще бл раз, ну вот зачем им делать ручку и говорить что должен все это делать серв кор, когда есть брокер??????? (за 10 часов до сдачи)
 	// в итоге получился вот такой говнокод)
 	// ----------------------------------
@@ -123,28 +122,25 @@ func ForDolbaebi(wsInput wsiface.WSInput, ctx *wsiface.Context) {
 
 	jsonBody, err := json.Marshal(requestBody)
 	if err != nil {
-		return 
+		return
 	}
 
 	req, err := http.NewRequest("PATCH", url, bytes.NewBuffer(jsonBody))
 	if err != nil {
-		return 
+		return
 	}
 
 	req.Header.Set("Content-Type", "application/json")
-	req.Header.Set("Authorization", ctx.Player.AccessToken) // TODO: нас пошлют когда токен перестанет быть валидным, мб стоит попросить юзера нам перепослать токен
+	req.Header.Set("Authorization", ctx.Player.AccessToken)
 
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
-		return 
+		return
 	}
 	defer resp.Body.Close()
 
 	if resp.StatusCode <= 200 || resp.StatusCode > 300 {
-		return 
+		return
 	}
-
-	// ----------------------------------
-
 }
